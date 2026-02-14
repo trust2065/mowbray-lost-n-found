@@ -2,15 +2,19 @@ import React, { useState } from 'react';
 
 interface GalleryProps {
   urls: string[];
+  onPhotoClick?: (index: number) => void;
 }
 
-const Gallery: React.FC<GalleryProps> = ({ urls }) => {
+const Gallery: React.FC<GalleryProps> = ({ urls, onPhotoClick }) => {
   const [idx, setIdx] = useState(0);
 
   if (!urls.length) return <div className="bg-slate-100 w-full h-full" />;
 
   return (
-    <div className="relative w-full h-full group">
+    <div
+      className="relative w-full h-full group cursor-zoom-in"
+      onClick={() => onPhotoClick?.(idx)}
+    >
       <img src={urls[idx]} className="w-full h-full object-cover transition-opacity duration-300" alt="item" />
       {urls.length > 1 && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 px-2 py-1 bg-black/20 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity">

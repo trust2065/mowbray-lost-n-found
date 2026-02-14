@@ -6,9 +6,10 @@ import type { Item, ViewMode } from '../types';
 interface ItemCardProps {
   item: Item;
   viewMode: ViewMode;
+  onPhotoClick: (urls: string[], index: number) => void;
 }
 
-const ItemCard: React.FC<ItemCardProps> = ({ item, viewMode }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ item, viewMode, onPhotoClick }) => {
   return (
     <div className={
       viewMode === 'grid'
@@ -20,7 +21,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, viewMode }) => {
           ? "aspect-[4/5] bg-slate-100"
           : "w-28 h-28 flex-shrink-0 rounded-[1.5rem] overflow-hidden"
       }>
-        <Gallery urls={item.imageUrls} />
+        <Gallery urls={item.imageUrls} onPhotoClick={(index) => onPhotoClick(item.imageUrls, index)} />
       </div>
       <div className={viewMode === 'grid' ? "p-6" : "flex-1"}>
         <div className="flex items-center gap-2 mb-2">

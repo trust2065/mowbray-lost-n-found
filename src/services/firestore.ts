@@ -269,6 +269,46 @@ export const subscribeToItemsSmart = (
   );
 };
 
+// Delete all items and their photos
+export const deleteAllItems = async (): Promise<void> => {
+  try {
+    console.log('Deleting all items and photos...');
+
+    // Get all items first to collect image URLs
+    const q = query(collection(db, ITEMS_COLLECTION));
+    const querySnapshot = await getDocs(q);
+
+    // Collect all image URLs from all items
+    const allImageUrls: string[] = [];
+    querySnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      if (data.imageUrls && Array.isArray(data.imageUrls)) {
+        allImageUrls.push(...data.imageUrls);
+      }
+    });
+
+    // Delete all Firestore items
+    const deletePromises = querySnapshot.docs.map(doc =>
+      deleteDoc(doc.ref)
+    );
+
+    await Promise.all(deletePromises);
+    console.log(`Deleted ${querySnapshot.docs.length} items from Firestore`);
+
+    // Delete all photos from Firebase Storage
+    if (allImageUrls.length > 0) {
+      const { deleteAllPhotos } = await import('./storage');
+      await deleteAllPhotos(allImageUrls);
+      console.log(`Deleted ${allImageUrls.length} photos from Storage`);
+    }
+
+    console.log('All items and photos deleted successfully');
+  } catch (error) {
+    console.error('Error deleting all items and photos:', error);
+    throw error;
+  }
+};
+
 export const deleteItem = async (itemId: string): Promise<void> => {
   await deleteDoc(doc(db, ITEMS_COLLECTION, itemId));
 };

@@ -4,13 +4,14 @@ import { ADMIN_PASSCODE, CATEGORIES, LOCATIONS } from './constants';
 import type { Item, PendingItem, ViewMode } from './types';
 import { useGeminiAPI } from './hooks/useGeminiAPI';
 import { useFileUpload } from './hooks/useFileUpload';
-import { subscribeToItemsSmart } from './services/firestore';
+import { subscribeToItemsSmart, deleteAllItems } from './services/firestore';
 import Header from './components/Header';
 import CategoryFilter from './components/CategoryFilter';
 import ItemCard from './components/ItemCard';
 import StaffLoginModal from './components/StaffLoginModal';
 import UploadModal from './components/UploadModal';
 import SuccessToast from './components/SuccessToast';
+import PhotoViewer from './components/PhotoViewer';
 
 const App: React.FC = () => {
   // --- State Management ---
@@ -48,6 +49,12 @@ const App: React.FC = () => {
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
   const [showSuccessToast, setShowSuccessToast] = useState<boolean>(false);
 
+  const [photoViewer, setPhotoViewer] = useState<{ isOpen: boolean; urls: string[]; index: number; }>({
+    isOpen: false,
+    urls: [],
+    index: 0
+  });
+
   const { autoFillItem, cancelAiFill } = useGeminiAPI();
   const {
     handleFileSelect,
@@ -79,6 +86,20 @@ const App: React.FC = () => {
   // --- Actions & Handlers ---
 
   const handleAdminLogout = useCallback((): void => setIsAdmin(false), []);
+
+  const handleDeleteAllItems = useCallback(async (): Promise<void> => {
+    if (!confirm('Are you sure you want to delete ALL items and photos? This cannot be undone!')) {
+      return;
+    }
+
+    try {
+      await deleteAllItems();
+      console.log('All items deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete all items:', error);
+      alert('Failed to delete items. Please try again.');
+    }
+  }, []);
 
   const filteredItems = useMemo(() => {
     const isRecent = (dateStr: string): boolean => {
@@ -145,6 +166,7 @@ const App: React.FC = () => {
               </div>
             </div>
             <div className="flex gap-2">
+              <button onClick={handleDeleteAllItems} className="text-xs font-bold bg-red-500 text-white px-3 py-2 rounded-xl shadow-sm">Delete All</button>
               <button onClick={handleAdminLogout} className="text-xs font-bold bg-white text-amber-700 px-4 py-2 rounded-xl shadow-sm">Logout</button>
             </div>
           </div>
@@ -174,11 +196,23 @@ const App: React.FC = () => {
         ) : (
           <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" : "space-y-4"}>
             {filteredItems.map(item => (
-              <ItemCard key={item.id} item={item} viewMode={viewMode} />
+              <ItemCard
+                key={item.id}
+                item={item}
+                viewMode={viewMode}
+                onPhotoClick={(urls, index) => setPhotoViewer({ isOpen: true, urls, index })}
+              />
             ))}
           </div>
         )}
       </main>
+
+      <PhotoViewer
+        isOpen={photoViewer.isOpen}
+        urls={photoViewer.urls}
+        initialIndex={photoViewer.index}
+        onClose={() => setPhotoViewer(prev => ({ ...prev, isOpen: false }))}
+      />
 
       <StaffLoginModal
         isOpen={showPasscodeModal}
