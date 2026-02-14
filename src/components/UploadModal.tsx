@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Upload, Trash2, Loader2, Sparkles } from 'lucide-react';
 import { CATEGORIES, LOCATIONS } from '../constants';
 import type { PendingItem } from '../types';
+import { compressImage, needsCompression, formatFileSize, isFileTooLarge } from '../utils/imageCompression';
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -30,22 +31,69 @@ const UploadModal: React.FC<UploadModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  // Create a separate ref for the "add another item" button
+  const addItemInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleAddAnotherItem = () => {
+    addItemInputRef.current?.click();
+  };
+
   const handleAddMorePhotos = (item: PendingItem, index: number) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.multiple = true;
-    input.onchange = (ev: Event) => {
+    input.accept = 'image/*'; // Only accept images
+    input.onchange = async (ev: Event) => {
       const target = ev.target as HTMLInputElement;
       if (target.files) {
         const files = Array.from(target.files);
-        files.forEach(file => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            onUpdatePendingField(index, 'imageUrls', [...item.imageUrls, reader.result as string]);
-            onUpdatePendingField(index, 'activePreviewIdx', item.imageUrls.length);
-          };
-          reader.readAsDataURL(file);
+        const validFiles = files.filter(file => {
+          // Check if file is an image
+          if (!file.type.startsWith('image/')) {
+            console.warn('Skipping non-image file:', file.name);
+            return false;
+          }
+
+          // Check if file is too large
+          if (isFileTooLarge(file)) {
+            alert(`File ${file.name} is too large (${formatFileSize(file.size)}). Maximum size is ${formatFileSize(20 * 1024 * 1024)}.`);
+            return false;
+          }
+
+          return true;
         });
+
+        // Process each valid file
+        for (const file of validFiles) {
+          try {
+            let imageDataUrl: string;
+
+            if (needsCompression(file)) {
+              console.log(`Compressing large image: ${file.name} (${formatFileSize(file.size)})`);
+              const compressed = await compressImage(file);
+              console.log(`Compressed ${file.name}: ${formatFileSize(compressed.originalSize)} → ${formatFileSize(compressed.fileSize)} (${(compressed.compressionRatio * 100).toFixed(1)}% reduction)`);
+              imageDataUrl = compressed.dataUrl;
+            } else {
+              imageDataUrl = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsDataURL(file);
+              });
+            }
+
+            // Add the new image to the item
+            onUpdatePendingField(index, 'imageUrls', [...item.imageUrls, imageDataUrl]);
+          } catch (error) {
+            console.error('Failed to process image:', file.name, error);
+            alert(`Failed to process ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          }
+        }
+
+        // Update active preview to the last added image
+        if (validFiles.length > 0) {
+          onUpdatePendingField(index, 'activePreviewIdx', item.imageUrls.length);
+        }
       }
     };
     input.click();
@@ -168,12 +216,20 @@ const UploadModal: React.FC<UploadModalProps> = ({
                 </div>
               ))}
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handleAddAnotherItem}
                 disabled={!isAdmin && pendingItems.length >= 5}
-                className="w-full py-5 border-2 border-dashed rounded-[2.5rem] text-slate-400 font-black text-sm hover:text-emerald-600"
+                className="w-full py-5 border-2 border-dashed rounded-[2.5rem] text-slate-400 font-black text-sm hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 + Add Another Item
               </button>
+              <input
+                type="file"
+                ref={addItemInputRef}
+                className="hidden"
+                accept="image/*"
+                multiple
+                onChange={onFileSelect}
+              />
             </div>
           )}
         </div>

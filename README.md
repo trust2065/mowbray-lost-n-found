@@ -46,7 +46,7 @@ cp .env.example .env
 
 # Edit .env with your actual values:
 VITE_GEMINI_API_KEY=your_gemini_api_key_here
-VITE_ADMIN_PASSCODE=12#qQ
+VITE_ADMIN_PASSCODE=1279
 ```
 
 ### Running the Application

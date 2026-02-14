@@ -2,12 +2,14 @@ import React, { useRef } from 'react';
 import type { PendingItem, Item } from '../types';
 import { uploadMultipleImages } from '../services/storage';
 import { addItem } from '../services/firestore';
+import { compressImage, needsCompression, formatFileSize, isFileTooLarge } from '../utils/imageCompression';
 
 export const useFileUpload = (
   lastUsedCategory: string,
   lastUsedLocation: string,
   setLastUsedCategory: (category: string) => void,
-  setLastUsedLocation: (location: string) => void
+  setLastUsedLocation: (location: string) => void,
+  optimisticIdsRef: React.MutableRefObject<Set<string>>
 ) => {
   // Store active FileReaders for cleanup
   const activeReaders = useRef<Set<FileReader>>(new Set());
@@ -36,30 +38,60 @@ export const useFileUpload = (
     }
 
     files.forEach(file => {
-      const reader = new FileReader();
-      activeReaders.current.add(reader);
+      // Check if file is an image
+      if (!file.type.startsWith('image/')) {
+        console.warn('Skipping non-image file:', file.name);
+        return;
+      }
 
-      reader.onloadend = () => {
-        activeReaders.current.delete(reader);
-        setPendingItems(prev => [...prev, {
-          id: Math.random().toString(36).substring(2, 11),
-          imageUrls: [reader.result as string],
-          nameTag: '',
-          category: lastUsedCategory,
-          description: '',
-          location: lastUsedLocation,
-          customLocation: '',
-          isAnalyzing: false,
-          activePreviewIdx: 0
-        }]);
+      // Check if file is too large
+      if (isFileTooLarge(file)) {
+        alert(`File ${file.name} is too large (${formatFileSize(file.size)}). Maximum size is ${formatFileSize(20 * 1024 * 1024)}.`);
+        return;
+      }
+
+      // Check file size (warn if larger than 5MB)
+      if (needsCompression(file)) {
+        console.log(`Compressing large image: ${file.name} (${formatFileSize(file.size)})`);
+      }
+
+      // Process image (compress if needed)
+      const processImage = async () => {
+        try {
+          let imageDataUrl: string;
+
+          if (needsCompression(file)) {
+            const compressed = await compressImage(file);
+            console.log(`Compressed ${file.name}: ${formatFileSize(compressed.originalSize)} → ${formatFileSize(compressed.fileSize)} (${(compressed.compressionRatio * 100).toFixed(1)}% reduction)`);
+            imageDataUrl = compressed.dataUrl;
+          } else {
+            const reader = new FileReader();
+            imageDataUrl = await new Promise<string>((resolve, reject) => {
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = () => reject(new Error('Failed to read file'));
+              reader.readAsDataURL(file);
+            });
+          }
+
+          // Add to pending items
+          setPendingItems(prev => [...prev, {
+            id: Math.random().toString(36).substring(2, 11),
+            imageUrls: [imageDataUrl],
+            nameTag: '',
+            category: lastUsedCategory,
+            description: '',
+            location: lastUsedLocation,
+            customLocation: '',
+            isAnalyzing: false,
+            activePreviewIdx: 0
+          }]);
+        } catch (error) {
+          console.error('Failed to process image:', file.name, error);
+          alert(`Failed to process ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
       };
 
-      reader.onerror = () => {
-        activeReaders.current.delete(reader);
-        console.error('FileReader error for file:', file.name);
-      };
-
-      reader.readAsDataURL(file);
+      processImage();
     });
     e.target.value = '';
   };
@@ -93,46 +125,84 @@ export const useFileUpload = (
     pendingItems: PendingItem[],
     setPendingItems: React.Dispatch<React.SetStateAction<PendingItem[]>>,
     setIsUploadModalOpen: (open: boolean) => void,
-    setShowSuccessToast: (show: boolean) => void
+    setShowSuccessToast: (show: boolean) => void,
+    setItems?: React.Dispatch<React.SetStateAction<Item[]>>
   ): Promise<void> => {
     try {
-      const now = new Date().toISOString().split('T')[0];
+      // Create optimistic items for immediate UI update
+      const optimisticItems: Item[] = pendingItems.map((pendingItem, index) => ({
+        id: `optimistic-${pendingItem.id}`,
+        imageUrls: pendingItem.imageUrls,
+        nameTag: pendingItem.nameTag,
+        category: pendingItem.category,
+        description: pendingItem.description,
+        foundDate: new Date(Date.now() - index * 1000).toISOString(), // Stagger timestamps by 1 second
+        location: pendingItem.location === 'Other' ? (pendingItem.customLocation || 'Other Area') : pendingItem.location
+      }));
 
-      // Upload all items to Firebase
-      const uploadPromises = pendingItems.map(async (pendingItem) => {
-        // Convert data URLs to File objects for upload
-        const imageFiles = await Promise.all(
-          pendingItem.imageUrls.map(async (dataUrl, index) => {
-            const response = await fetch(dataUrl);
-            const blob = await response.blob();
-            return new File([blob], `image-${index}.png`, { type: 'image/png' });
-          })
-        );
+      // Add optimistic items to UI immediately
+      if (setItems) {
+        setItems(prevItems => [...optimisticItems, ...prevItems]);
+      }
 
-        // Upload images to Firebase Storage
-        const imageUrls = await uploadMultipleImages(imageFiles, pendingItem.id);
-
-        // Create item for Firestore
-        const itemData: Omit<Item, 'id'> = {
-          imageUrls,
-          nameTag: pendingItem.nameTag,
-          category: pendingItem.category,
-          description: pendingItem.description,
-          foundDate: now,
-          location: pendingItem.location === 'Other' ? (pendingItem.customLocation || 'Other Area') : pendingItem.location
-        };
-
-        return addItem(itemData);
-      });
-
-      await Promise.all(uploadPromises);
-
+      // Close modal and show success immediately
       setPendingItems([]);
       setIsUploadModalOpen(false);
       setShowSuccessToast(true);
       setTimeout(() => setShowSuccessToast(false), 3000);
+
+      // Store optimistic IDs to prevent Firestore updates from refreshing them
+      optimisticIdsRef.current = new Set(optimisticItems.map(item => item.id));
+
+      // Upload all items to Firebase in background - DON'T update UI after
+      const uploadPromises = pendingItems.map(async (pendingItem, index) => {
+        try {
+          // Convert data URLs to File objects for upload
+          const imageFiles = await Promise.all(
+            pendingItem.imageUrls.map(async (dataUrl, fileIndex) => {
+              const response = await fetch(dataUrl);
+              const blob = await response.blob();
+              return new File([blob], `image-${fileIndex}.png`, { type: 'image/png' });
+            })
+          );
+
+          // Upload images to Firebase Storage
+          const imageUrls = await uploadMultipleImages(imageFiles, pendingItem.id);
+
+          // Create item for Firestore
+          const itemData: Omit<Item, 'id'> = {
+            imageUrls,
+            nameTag: pendingItem.nameTag,
+            category: pendingItem.category,
+            description: pendingItem.description,
+            foundDate: new Date(Date.now() - index * 1000).toISOString(), // Use staggered timestamp
+            location: pendingItem.location === 'Other' ? (pendingItem.customLocation || 'Other Area') : pendingItem.location
+          };
+
+          const realId = await addItem(itemData);
+
+          // Clean up optimistic ID after successful upload
+          optimisticIdsRef.current.delete(optimisticItems[index].id);
+
+          return { success: true, realId };
+        } catch (error) {
+          console.error('Failed to upload item:', pendingItem.id, error);
+          return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+        }
+      });
+
+      const results = await Promise.all(uploadPromises);
+
+      // Clean up all optimistic IDs after all uploads complete
+      optimisticIdsRef.current.clear();
+
+      // Only show errors, don't update UI to prevent refresh
+      const failedItems = results.filter(r => !r.success);
+      if (failedItems.length > 0) {
+        alert(`${failedItems.length} item(s) failed to upload.`);
+      }
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error('Upload process failed:', error);
       alert('Upload failed. Please try again.');
     }
   };

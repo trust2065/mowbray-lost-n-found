@@ -4,7 +4,7 @@ import { ADMIN_PASSCODE, CATEGORIES, LOCATIONS } from './constants';
 import type { Item, PendingItem, ViewMode } from './types';
 import { useGeminiAPI } from './hooks/useGeminiAPI';
 import { useFileUpload } from './hooks/useFileUpload';
-import { subscribeToItems } from './services/firestore';
+import { subscribeToItemsSmart } from './services/firestore';
 import Header from './components/Header';
 import CategoryFilter from './components/CategoryFilter';
 import ItemCard from './components/ItemCard';
@@ -21,14 +21,21 @@ const App: React.FC = () => {
 
   const [items, setItems] = useState<Item[]>([]);
 
+  // --- Instance Refs ---
+  const abortControllers = useRef<Map<string, AbortController>>(new Map());
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const optimisticIds = useRef<Set<string>>(new Set());
+
   // Real-time Firestore subscription
   useEffect(() => {
-    const unsubscribe = subscribeToItems((fetchedItems) => {
+    const unsubscribe = subscribeToItemsSmart((fetchedItems) => {
       setItems(fetchedItems);
-    });
+    }, optimisticIds);
 
-    return () => unsubscribe();
-  }, []);
+    return () => {
+      unsubscribe();
+    };
+  }, [optimisticIds]);
 
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -40,10 +47,6 @@ const App: React.FC = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
   const [showSuccessToast, setShowSuccessToast] = useState<boolean>(false);
-
-  // --- Instance Refs ---
-  const abortControllers = useRef<Map<string, AbortController>>(new Map());
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { autoFillItem, cancelAiFill } = useGeminiAPI();
   const {
@@ -57,7 +60,8 @@ const App: React.FC = () => {
     lastUsedCategory,
     lastUsedLocation,
     setLastUsedCategory,
-    setLastUsedLocation
+    setLastUsedLocation,
+    optimisticIds
   );
 
   // --- Cleanup on component unmount ---
@@ -110,7 +114,7 @@ const App: React.FC = () => {
   };
 
   const confirmUploadWrapper = (): void => {
-    confirmUpload(pendingItems, setPendingItems, setIsUploadModalOpen, setShowSuccessToast);
+    confirmUpload(pendingItems, setPendingItems, setIsUploadModalOpen, setShowSuccessToast, setItems);
   };
 
   const autoFillItemWrapper = (index: number): void => {
@@ -140,7 +144,9 @@ const App: React.FC = () => {
                 <p className="text-[11px] font-medium opacity-70">Full history access active.</p>
               </div>
             </div>
-            <button onClick={handleAdminLogout} className="text-xs font-bold bg-white text-amber-700 px-4 py-2 rounded-xl shadow-sm">Logout</button>
+            <div className="flex gap-2">
+              <button onClick={handleAdminLogout} className="text-xs font-bold bg-white text-amber-700 px-4 py-2 rounded-xl shadow-sm">Logout</button>
+            </div>
           </div>
         )}
 

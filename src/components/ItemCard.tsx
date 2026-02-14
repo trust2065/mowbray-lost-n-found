@@ -11,13 +11,13 @@ interface ItemCardProps {
 const ItemCard: React.FC<ItemCardProps> = ({ item, viewMode }) => {
   return (
     <div className={
-      viewMode === 'grid' 
-        ? "bg-white rounded-[2.5rem] overflow-hidden border hover:shadow-2xl transition-all" 
+      viewMode === 'grid'
+        ? "bg-white rounded-[2.5rem] overflow-hidden border hover:shadow-2xl transition-all"
         : "bg-white p-5 rounded-[2rem] border flex items-center gap-6"
     }>
       <div className={
-        viewMode === 'grid' 
-          ? "aspect-[4/5] bg-slate-100" 
+        viewMode === 'grid'
+          ? "aspect-[4/5] bg-slate-100"
           : "w-28 h-28 flex-shrink-0 rounded-[1.5rem] overflow-hidden"
       }>
         <Gallery urls={item.imageUrls} />

@@ -9,6 +9,7 @@
 - [ ] Fix items disappearing on page refresh - ensure proper Firebase persistence
 - [ ] Rate Limiting：為了防止 Gemini API 被惡意刷爆，可以加上 express-rate-limit。
 - [ ] Refine rule for storage bucket and firestore
+- [ ] DO NOT refresh the photo after upload success
 
 ## Medium Priority
 - [ ] Add test plan documentation
