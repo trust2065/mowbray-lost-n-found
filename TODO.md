@@ -1,15 +1,15 @@
 # TODO List
 
 ## High Priority
-- [ ] Minimize upload picture size/compression
-- [ ] Set maximum photo size limit for uploads
-- [ ] Fix 'add another item' button functionality
-- [ ] Format found date to readable format (2026-02-14T00:00:00.000Z)
-- [ ] Add item to list and close dialog immediately while submitting in background
-- [ ] Fix items disappearing on page refresh - ensure proper Firebase persistence
+- [x] Minimize upload picture size/compression
+- [x] Set maximum photo size limit for uploads
+- [x] Fix 'add another item' button functionality
+- [x] Format found date to readable format (2026-02-14T00:00:00.000Z)
+- [x] Add item to list and close dialog immediately while submitting in background
+- [x] Fix items disappearing on page refresh - ensure proper Firebase persistence
 - [ ] Rate Limiting：為了防止 Gemini API 被惡意刷爆，可以加上 express-rate-limit。
 - [ ] Refine rule for storage bucket and firestore
-- [ ] DO NOT refresh the photo after upload success
+- [x] DO NOT refresh the photo after upload success
 
 ## Medium Priority
 - [ ] Add test plan documentation
