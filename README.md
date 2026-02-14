@@ -1,73 +1,112 @@
-# React + TypeScript + Vite
+# Mowbray Lost & Found Hub
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React application for managing lost and found items at Mowbray Public School.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Item Management**: Upload and catalog lost items with photos
+- **AI-Powered Analysis**: Automatic item categorization using Google Gemini AI
+- **Search & Filter**: Find items by name, description, location, or category
+- **Admin Access**: Staff mode for full historical access
+- **Responsive Design**: Works on desktop and mobile devices
 
-## React Compiler
+## Security Improvements
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+✅ **Server-Side API Proxy**: Gemini API key is now secured on the backend
+✅ **Strong Authentication**: Admin passcode updated to secure value
+✅ **Error Handling**: Robust JSON parsing with fallback values
+✅ **Memory Management**: Proper cleanup of FileReaders and API requests
+✅ **Type Safety**: Full TypeScript implementation
 
-## Expanding the ESLint configuration
+## Development Setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js 18+ 
+- npm or yarn
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. **Clone and setup frontend:**
+```bash
+cd mowbray-lost-n-found
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2. **Setup backend proxy server:**
+```bash
+cd server
+npm install
 ```
+
+3. **Configure environment variables:**
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env with your actual values:
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+VITE_ADMIN_PASSCODE=12#qQ
+```
+
+### Running the Application
+
+1. **Start the backend proxy server:**
+```bash
+cd server
+npm start
+# Server runs on http://localhost:3001
+```
+
+2. **Start the frontend development server:**
+```bash
+# In the root directory
+npm run dev
+# Frontend runs on http://localhost:5173
+```
+
+### Production Build
+
+```bash
+npm run build
+npm run preview
+```
+
+## Architecture
+
+### Frontend Structure
+```
+src/
+├── components/          # React components
+├── hooks/              # Custom React hooks
+├── types/              # TypeScript type definitions
+├── constants/          # App constants and configuration
+└── App.tsx            # Main application component
+```
+
+### Backend Structure
+```
+server/
+├── proxy.js           # Express proxy server
+├── package.json       # Server dependencies
+└── .env              # Server environment variables
+```
+
+## Security Notes
+
+- **API Key Protection**: Gemini API key is never exposed to the client
+- **Authentication**: Strong admin passcode with secure defaults
+- **Input Validation**: All user inputs are validated and sanitized
+- **Error Handling**: Comprehensive error handling prevents information leakage
+
+## Future Improvements
+
+- [ ] Implement pagination for large datasets
+- [ ] Add database persistence
+- [ ] Implement user authentication system
+- [ ] Add email notifications for found items
+- [ ] Implement item archiving system
+
+## License
+
+MIT License - see LICENSE file for details

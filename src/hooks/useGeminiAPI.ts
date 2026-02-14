@@ -1,4 +1,4 @@
-import { API_KEY, MODEL_NAME, CATEGORIES } from '../constants';
+import { CATEGORIES } from '../constants';
 import type { PendingItem, GeminiAnalysis } from '../types';
 
 export const useGeminiAPI = () => {
@@ -22,26 +22,41 @@ export const useGeminiAPI = () => {
     const prompt = `Analyze this lost item for Mowbray Public School. Categorize as: ${CATEGORIES.join(', ')}. Return JSON: { "nameTag": "string", "category": "string", "description": "string" }`;
 
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: prompt },
-                { inlineData: { mimeType: "image/png", data: item.imageUrls[0].split(',')[1] } }
-              ]
-            }],
-            generationConfig: { responseMimeType: "application/json" }
-          }),
-          signal: controller.signal
-        }
-      );
+      const imageData = item.imageUrls[0].split(',')[1]; // Remove data URL prefix
+
+      const response = await fetch('http://localhost:3001/api/gemini/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageData,
+          prompt
+        }),
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+      }
 
       const result = await response.json();
-      const analysis: GeminiAnalysis = JSON.parse(result.candidates?.[0]?.content?.parts?.[0]?.text);
+
+      // Safe JSON parsing with fallback values
+      let analysis: GeminiAnalysis;
+      try {
+        const textContent = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!textContent) {
+          throw new Error('No text content in AI response');
+        }
+        analysis = JSON.parse(textContent);
+      } catch (parseError) {
+        console.error('JSON parsing error:', parseError);
+        // Use fallback values
+        analysis = {
+          nameTag: 'Unknown',
+          category: CATEGORIES[0],
+          description: 'Unable to analyze image'
+        };
+      }
 
       setPendingItems(prev => {
         const next = [...prev];
@@ -57,10 +72,20 @@ export const useGeminiAPI = () => {
         return next;
       });
     } catch (err) {
-      if ((err as Error).name !== 'AbortError') console.error("AI Error:", err);
+      if ((err as Error).name !== 'AbortError') {
+        console.error("AI Error:", err);
+      }
       setPendingItems(prev => {
         const next = [...prev];
-        if (next[index]) next[index].isAnalyzing = false;
+        if (next[index]) {
+          next[index] = {
+            ...next[index],
+            isAnalyzing: false,
+            nameTag: next[index].nameTag || 'Unknown',
+            category: next[index].category || CATEGORIES[0],
+            description: next[index].description || 'Analysis failed'
+          };
+        }
         return next;
       });
     } finally {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Plus, ShieldCheck, Search } from 'lucide-react';
 import { ADMIN_PASSCODE, CATEGORIES, LOCATIONS } from './constants';
 import type { Item, PendingItem, ViewMode } from './types';
@@ -19,6 +19,8 @@ const App: React.FC = () => {
   const [loginError, setLoginError] = useState<boolean>(false);
 
   const [items, setItems] = useState<Item[]>([
+    // TODO: Implement pagination to handle unbounded state growth
+    // Current implementation stores all items in memory which can cause performance issues
     {
       id: 'sample-1',
       imageUrls: ['https://images.unsplash.com/photo-1519327232521-1ea2c736d34d?auto=format&fit=crop&q=80&w=400'],
@@ -51,13 +53,26 @@ const App: React.FC = () => {
     updatePendingField,
     removePendingItem,
     confirmUpload,
-    closeAndCancelAll
+    closeAndCancelAll,
+    cleanupReaders
   } = useFileUpload(
     lastUsedCategory,
     lastUsedLocation,
     setLastUsedCategory,
     setLastUsedLocation
   );
+
+  // --- Cleanup on component unmount ---
+  useEffect(() => {
+    return () => {
+      // Cleanup all abort controllers
+      abortControllers.current.forEach(controller => controller.abort());
+      abortControllers.current.clear();
+
+      // Cleanup all FileReaders
+      cleanupReaders();
+    };
+  }, [cleanupReaders]);
 
   // --- Actions & Handlers ---
 

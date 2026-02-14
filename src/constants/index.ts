@@ -8,9 +8,9 @@ export const getEnvVar = (key: keyof ImportMetaEnv, fallback: string): string =>
   }
 };
 
-export const API_KEY: string = getEnvVar('VITE_GEMINI_API_KEY', '');
+export const API_KEY: string = ''; // Removed - now handled by server proxy
 export const MODEL_NAME: string = "gemini-2.5-flash-preview-09-2025";
-export const ADMIN_PASSCODE: string = getEnvVar('VITE_ADMIN_PASSCODE', '1234');
+export const ADMIN_PASSCODE: string = getEnvVar('VITE_ADMIN_PASSCODE', '12#qQ');
 
 export const CATEGORIES: readonly string[] = ["School Hat", "Water Bottle", "Lunch Box"] as const;
 export const LOCATIONS: readonly string[] = [

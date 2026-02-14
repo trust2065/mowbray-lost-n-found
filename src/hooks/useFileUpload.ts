@@ -1,3 +1,4 @@
+import React, { useRef } from 'react';
 import type { PendingItem, Item } from '../types';
 
 export const useFileUpload = (
@@ -6,6 +7,18 @@ export const useFileUpload = (
   setLastUsedCategory: (category: string) => void,
   setLastUsedLocation: (location: string) => void
 ) => {
+  // Store active FileReaders for cleanup
+  const activeReaders = useRef<Set<FileReader>>(new Set());
+
+  // Cleanup function for FileReaders
+  const cleanupReaders = () => {
+    activeReaders.current.forEach((reader: FileReader) => {
+      if (reader.readyState === FileReader.LOADING) {
+        reader.abort();
+      }
+    });
+    activeReaders.current.clear();
+  };
   const handleFileSelect = (
     e: React.ChangeEvent<HTMLInputElement>,
     setPendingItems: React.Dispatch<React.SetStateAction<PendingItem[]>>,
@@ -22,7 +35,10 @@ export const useFileUpload = (
 
     files.forEach(file => {
       const reader = new FileReader();
+      activeReaders.current.add(reader);
+
       reader.onloadend = () => {
+        activeReaders.current.delete(reader);
         setPendingItems(prev => [...prev, {
           id: Math.random().toString(36).substring(2, 11),
           imageUrls: [reader.result as string],
@@ -35,6 +51,12 @@ export const useFileUpload = (
           activePreviewIdx: 0
         }]);
       };
+
+      reader.onerror = () => {
+        activeReaders.current.delete(reader);
+        console.error('FileReader error for file:', file.name);
+      };
+
       reader.readAsDataURL(file);
     });
     e.target.value = '';
@@ -104,6 +126,7 @@ export const useFileUpload = (
     updatePendingField,
     removePendingItem,
     confirmUpload,
-    closeAndCancelAll
+    closeAndCancelAll,
+    cleanupReaders
   };
 };
