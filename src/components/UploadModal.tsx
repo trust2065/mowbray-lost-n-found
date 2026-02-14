@@ -1,0 +1,194 @@
+import React from 'react';
+import { X, Upload, Trash2, Loader2, Sparkles } from 'lucide-react';
+import { CATEGORIES, LOCATIONS } from '../constants';
+import type { PendingItem } from '../types';
+
+interface UploadModalProps {
+  isOpen: boolean;
+  isAdmin: boolean;
+  pendingItems: PendingItem[];
+  onClose: () => void;
+  onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onUpdatePendingField: <K extends keyof PendingItem>(index: number, field: K, value: PendingItem[K]) => void;
+  onRemovePendingItem: (id: string) => void;
+  onAutoFillItem: (index: number) => void;
+  onConfirmUpload: () => void;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+}
+
+const UploadModal: React.FC<UploadModalProps> = ({
+  isOpen,
+  isAdmin,
+  pendingItems,
+  onClose,
+  onFileSelect,
+  onUpdatePendingField,
+  onRemovePendingItem,
+  onAutoFillItem,
+  onConfirmUpload,
+  fileInputRef
+}) => {
+  if (!isOpen) return null;
+
+  const handleAddMorePhotos = (item: PendingItem, index: number) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.onchange = (ev: Event) => {
+      const target = ev.target as HTMLInputElement;
+      if (target.files) {
+        const files = Array.from(target.files);
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            onUpdatePendingField(index, 'imageUrls', [...item.imageUrls, reader.result as string]);
+            onUpdatePendingField(index, 'activePreviewIdx', item.imageUrls.length);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    };
+    input.click();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+      <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="px-10 py-7 border-b flex items-center justify-between">
+          <div>
+            <h3 className="text-2xl font-black text-slate-800">Upload Photos</h3>
+            <p className="text-[10px] text-slate-400 font-bold uppercase">
+              {isAdmin ? 'Staff Mode' : `Guest Mode: Max 5 items / 3 photos per item`}
+            </p>
+          </div>
+          <button onClick={onClose} className="p-2">
+            <X className="w-7 h-7 text-slate-300" />
+          </button>
+        </div>
+
+        <div className="p-8 overflow-y-auto bg-slate-50/50">
+          {pendingItems.length === 0 ? (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="cursor-pointer border-4 border-dashed rounded-[3rem] p-20 text-center hover:border-emerald-300"
+            >
+              <Upload className="w-14 h-14 mx-auto text-slate-200 mb-5" />
+              <p className="text-xl font-black text-slate-700">Select Item Photo(s)</p>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                multiple
+                onChange={onFileSelect}
+              />
+            </div>
+          ) : (
+            <div className="space-y-10">
+              {pendingItems.map((item, index) => (
+                <div key={item.id} className="bg-white p-7 rounded-[2.5rem] shadow-xl flex flex-col sm:flex-row gap-8">
+                  <div className="w-full sm:w-36 flex-shrink-0 flex flex-col gap-4">
+                    <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-slate-100">
+                      <img
+                        src={item.imageUrls[item.activePreviewIdx]}
+                        className="w-full h-full object-cover"
+                        alt="preview"
+                      />
+                      <button
+                        onClick={() => onRemovePendingItem(item.id)}
+                        className="absolute top-2 right-2 bg-rose-500 text-white p-1.5 rounded-full border-2 border-white"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+                      {item.imageUrls.map((img, i) => (
+                        <div
+                          key={i}
+                          onClick={() => onUpdatePendingField(index, 'activePreviewIdx', i)}
+                          className={`w-10 h-10 flex-shrink-0 cursor-pointer rounded-lg border-2 ${item.activePreviewIdx === i ? 'border-emerald-500' : 'border-transparent'
+                            }`}
+                        >
+                          <img src={img} className="w-full h-full object-cover rounded-md" alt="thumb" />
+                        </div>
+                      ))}
+                      {item.imageUrls.length < (isAdmin ? 10 : 3) && (
+                        <button
+                          onClick={() => handleAddMorePhotos(item, index)}
+                          className="w-10 h-10 border-2 border-dashed rounded-lg flex items-center justify-center text-slate-300"
+                        >
+                          +
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 space-y-5">
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="text"
+                        placeholder="Name on item"
+                        className="flex-1 bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-black text-slate-700"
+                        value={item.nameTag}
+                        onChange={(e) => onUpdatePendingField(index, 'nameTag', e.target.value)}
+                      />
+                      {isAdmin && (
+                        <button
+                          onClick={() => onAutoFillItem(index)}
+                          disabled={item.isAnalyzing}
+                          className="bg-emerald-50 text-emerald-600 px-4 py-3 rounded-2xl text-[11px] font-black flex items-center gap-2 shadow-sm"
+                        >
+                          {item.isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} AI Fill
+                        </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <select
+                        className="bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600"
+                        value={item.category}
+                        onChange={(e) => onUpdatePendingField(index, 'category', e.target.value)}
+                      >
+                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                      <select
+                        className="bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600"
+                        value={item.location}
+                        onChange={(e) => onUpdatePendingField(index, 'location', e.target.value)}
+                      >
+                        {LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                    </div>
+                    <textarea
+                      placeholder="Description..."
+                      className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm min-h-[70px]"
+                      value={item.description}
+                      onChange={(e) => onUpdatePendingField(index, 'description', e.target.value)}
+                    />
+                  </div>
+                </div>
+              ))}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={!isAdmin && pendingItems.length >= 5}
+                className="w-full py-5 border-2 border-dashed rounded-[2.5rem] text-slate-400 font-black text-sm hover:text-emerald-600"
+              >
+                + Add Another Item
+              </button>
+            </div>
+          )}
+        </div>
+
+        {pendingItems.length > 0 && (
+          <div className="p-8 border-t flex items-center gap-5">
+            <button onClick={onClose} className="flex-1 py-4 text-slate-400 font-bold">Cancel</button>
+            <button onClick={onConfirmUpload} className="flex-[2] py-4.5 bg-emerald-600 text-white font-black rounded-[1.5rem] shadow-2xl active:scale-95 transition-all">
+              Post {pendingItems.length} Item(s)
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default UploadModal;

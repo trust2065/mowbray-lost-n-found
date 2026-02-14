@@ -1,0 +1,64 @@
+import React from 'react';
+import { Search, LayoutGrid, List } from 'lucide-react';
+import type { ViewMode } from '../types';
+
+interface HeaderProps {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
+  onTitleDoubleClick: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({
+  searchQuery,
+  setSearchQuery,
+  viewMode,
+  setViewMode,
+  onTitleDoubleClick
+}) => {
+  return (
+    <header className="sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-4 shadow-sm">
+      <div className="max-w-6xl mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-black tracking-tight text-slate-800">
+          Mowbray Public
+          <span
+            onDoubleClick={onTitleDoubleClick}
+            className="text-[10px] uppercase tracking-[0.25em] text-emerald-600 font-bold block mt-1 cursor-default select-none"
+          >
+            Lost & Found Hub
+          </span>
+        </h1>
+
+        <div className="flex items-center gap-2 flex-1 max-w-md">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex bg-slate-100 p-1 rounded-2xl">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-xl ${viewMode === 'grid' ? 'bg-white text-emerald-600' : 'text-slate-50'}`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-xl ${viewMode === 'list' ? 'bg-white text-emerald-600' : 'text-slate-50'}`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
