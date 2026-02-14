@@ -8,6 +8,7 @@
 - [ ] Add item to list and close dialog immediately while submitting in background
 - [ ] Fix items disappearing on page refresh - ensure proper Firebase persistence
 - [ ] Rate Limiting：為了防止 Gemini API 被惡意刷爆，可以加上 express-rate-limit。
+- [ ] Refine rule for storage bucket and firestore
 
 ## Medium Priority
 - [ ] Add test plan documentation
