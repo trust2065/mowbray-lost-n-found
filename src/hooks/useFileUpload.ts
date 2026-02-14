@@ -1,5 +1,7 @@
 import React, { useRef } from 'react';
 import type { PendingItem, Item } from '../types';
+import { uploadMultipleImages } from '../services/storage';
+import { addItem } from '../services/firestore';
 
 export const useFileUpload = (
   lastUsedCategory: string,
@@ -87,26 +89,52 @@ export const useFileUpload = (
     setPendingItems(prev => prev.filter(item => item.id !== id));
   };
 
-  const confirmUpload = (
+  const confirmUpload = async (
     pendingItems: PendingItem[],
-    setItems: React.Dispatch<React.SetStateAction<Item[]>>,
     setPendingItems: React.Dispatch<React.SetStateAction<PendingItem[]>>,
     setIsUploadModalOpen: (open: boolean) => void,
     setShowSuccessToast: (show: boolean) => void
-  ): void => {
-    const now = new Date().toISOString().split('T')[0];
-    const newEntries: Item[] = pendingItems.map(item => ({
-      ...item,
-      id: Date.now() + Math.random().toString(),
-      foundDate: now,
-      location: item.location === 'Other' ? (item.customLocation || 'Other Area') : item.location
-    }));
+  ): Promise<void> => {
+    try {
+      const now = new Date().toISOString().split('T')[0];
 
-    setItems(prev => [...newEntries, ...prev]);
-    setPendingItems([]);
-    setIsUploadModalOpen(false);
-    setShowSuccessToast(true);
-    setTimeout(() => setShowSuccessToast(false), 3000);
+      // Upload all items to Firebase
+      const uploadPromises = pendingItems.map(async (pendingItem) => {
+        // Convert data URLs to File objects for upload
+        const imageFiles = await Promise.all(
+          pendingItem.imageUrls.map(async (dataUrl, index) => {
+            const response = await fetch(dataUrl);
+            const blob = await response.blob();
+            return new File([blob], `image-${index}.png`, { type: 'image/png' });
+          })
+        );
+
+        // Upload images to Firebase Storage
+        const imageUrls = await uploadMultipleImages(imageFiles, pendingItem.id);
+
+        // Create item for Firestore
+        const itemData: Omit<Item, 'id'> = {
+          imageUrls,
+          nameTag: pendingItem.nameTag,
+          category: pendingItem.category,
+          description: pendingItem.description,
+          foundDate: now,
+          location: pendingItem.location === 'Other' ? (pendingItem.customLocation || 'Other Area') : pendingItem.location
+        };
+
+        return addItem(itemData);
+      });
+
+      await Promise.all(uploadPromises);
+
+      setPendingItems([]);
+      setIsUploadModalOpen(false);
+      setShowSuccessToast(true);
+      setTimeout(() => setShowSuccessToast(false), 3000);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Upload failed. Please try again.');
+    }
   };
 
   const closeAndCancelAll = (

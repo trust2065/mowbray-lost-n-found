@@ -4,6 +4,7 @@ import { ADMIN_PASSCODE, CATEGORIES, LOCATIONS } from './constants';
 import type { Item, PendingItem, ViewMode } from './types';
 import { useGeminiAPI } from './hooks/useGeminiAPI';
 import { useFileUpload } from './hooks/useFileUpload';
+import { subscribeToItems } from './services/firestore';
 import Header from './components/Header';
 import CategoryFilter from './components/CategoryFilter';
 import ItemCard from './components/ItemCard';
@@ -18,19 +19,16 @@ const App: React.FC = () => {
   const [passcodeAttempt, setPasscodeAttempt] = useState<string>('');
   const [loginError, setLoginError] = useState<boolean>(false);
 
-  const [items, setItems] = useState<Item[]>([
-    // TODO: Implement pagination to handle unbounded state growth
-    // Current implementation stores all items in memory which can cause performance issues
-    {
-      id: 'sample-1',
-      imageUrls: ['https://images.unsplash.com/photo-1519327232521-1ea2c736d34d?auto=format&fit=crop&q=80&w=400'],
-      nameTag: 'Jack W.',
-      category: 'Water Bottle',
-      description: 'Blue water bottle, scratched at the bottom.',
-      foundDate: new Date().toISOString().split('T')[0],
-      location: 'Lunch Area'
-    }
-  ]);
+  const [items, setItems] = useState<Item[]>([]);
+
+  // Real-time Firestore subscription
+  useEffect(() => {
+    const unsubscribe = subscribeToItems((fetchedItems) => {
+      setItems(fetchedItems);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -112,7 +110,7 @@ const App: React.FC = () => {
   };
 
   const confirmUploadWrapper = (): void => {
-    confirmUpload(pendingItems, setItems, setPendingItems, setIsUploadModalOpen, setShowSuccessToast);
+    confirmUpload(pendingItems, setPendingItems, setIsUploadModalOpen, setShowSuccessToast);
   };
 
   const autoFillItemWrapper = (index: number): void => {

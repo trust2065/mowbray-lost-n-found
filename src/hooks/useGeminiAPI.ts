@@ -1,5 +1,6 @@
 import { CATEGORIES } from '../constants';
 import type { PendingItem, GeminiAnalysis } from '../types';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const useGeminiAPI = () => {
   const autoFillItem = async (
@@ -22,35 +23,40 @@ export const useGeminiAPI = () => {
     const prompt = `Analyze this lost item for Mowbray Public School. Categorize as: ${CATEGORIES.join(', ')}. Return JSON: { "nameTag": "string", "category": "string", "description": "string" }`;
 
     try {
-      const imageData = item.imageUrls[0].split(',')[1]; // Remove data URL prefix
-
-      const response = await fetch('http://localhost:3001/api/gemini/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          imageData,
-          prompt
-        }),
-        signal: controller.signal
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+      // Get API key from environment
+      const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!API_KEY) {
+        throw new Error('Gemini API key not configured');
       }
 
-      const result = await response.json();
+      const genAI = new GoogleGenerativeAI(API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-09-2025" });
+
+      // Convert image URL to base64
+      const response = await fetch(item.imageUrls[0]);
+      const imageBlob = await response.blob();
+      const imageData = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(imageBlob);
+      });
+
+      const imagePart = {
+        inlineData: {
+          data: imageData.split(',')[1],
+          mimeType: "image/png"
+        }
+      };
+
+      const result = await model.generateContent([prompt, imagePart]);
+      const responseText = await result.response.text();
 
       // Safe JSON parsing with fallback values
       let analysis: GeminiAnalysis;
       try {
-        const textContent = result.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!textContent) {
-          throw new Error('No text content in AI response');
-        }
-        analysis = JSON.parse(textContent);
+        analysis = JSON.parse(responseText);
       } catch (parseError) {
         console.error('JSON parsing error:', parseError);
-        // Use fallback values
         analysis = {
           nameTag: 'Unknown',
           category: CATEGORIES[0],
