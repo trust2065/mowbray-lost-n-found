@@ -13,9 +13,7 @@ import {
   Calendar,
   Sparkles,
   Trash2,
-  Edit3,
   ShieldCheck,
-  LogOut,
   KeyRound
 } from 'lucide-react';
 
@@ -60,10 +58,6 @@ interface GeminiAnalysis {
 interface ImportMetaEnv {
   readonly VITE_ADMIN_PASSCODE: string;
   readonly VITE_GEMINI_API_KEY: string;
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
 }
 
 const getEnvVar = (key: keyof ImportMetaEnv, fallback: string): string => {
@@ -257,49 +251,6 @@ const App: React.FC = () => {
     e.target.value = '';
   };
 
-  const addMorePhotosToItem = (itemId: string, e: React.ChangeEvent<HTMLInputElement>): void => {
-    const files = Array.from(e.target.files || []);
-    const itemIndex = pendingItems.findIndex(i => i.id === itemId);
-    if (itemIndex === -1) return;
-
-    if (!isAdmin && (pendingItems[itemIndex].imageUrls.length + files.length) > 3) {
-      alert("Safety Guard: Max 3 photos per item.");
-      return;
-    }
-
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPendingItems(prev => prev.map(item => {
-          if (item.id === itemId) {
-            return {
-              ...item,
-              imageUrls: [...item.imageUrls, reader.result as string],
-              activePreviewIdx: item.imageUrls.length
-            };
-          }
-          return item;
-        }));
-      };
-      reader.readAsDataURL(file);
-    });
-    e.target.value = '';
-  };
-
-  const removeImageFromPending = (itemId: string, imgIndex: number): void => {
-    setPendingItems(prev => prev.map(item => {
-      if (item.id === itemId) {
-        const newUrls = item.imageUrls.filter((_, i) => i !== imgIndex);
-        return {
-          ...item,
-          imageUrls: newUrls,
-          activePreviewIdx: 0
-        };
-      }
-      return item;
-    }));
-  };
-
   const removePendingItem = (id: string): void => {
     cancelAiFill(id);
     setPendingItems(prev => prev.filter(item => item.id !== id));
@@ -343,7 +294,7 @@ const App: React.FC = () => {
 
   // --- UI Components ---
 
-  const Gallery: React.FC<{ urls: string[], isGrid?: boolean; }> = ({ urls, isGrid = true }) => {
+  const Gallery: React.FC<{ urls: string[]; }> = ({ urls, }) => {
     const [idx, setIdx] = useState(0);
     if (!urls.length) return <div className="bg-slate-100 w-full h-full" />;
 
