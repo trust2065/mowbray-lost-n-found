@@ -4,7 +4,7 @@
 - [x] Minimize upload picture size/compression
 - [x] Set maximum photo size limit for uploads
 - [x] Fix 'add another item' button functionality
-- [x] Format found date to readable format (2026-02-14T00:00:00.000Z)
+- [x] Format found date to readable format
 - [x] Add item to list and close dialog immediately while submitting in background
 - [x] Fix items disappearing on page refresh - ensure proper Firebase persistence
 - [x] Rate Limiting：為了防止 Gemini API 被惡意刷爆，可以加上 express-rate-limit。
@@ -17,8 +17,8 @@
 - [ignore] Prevent duplicate photos for same item
 - [x] Limit 'add more photo' button to photos only, exclude selected items
 - [x] Move trash button from picture to the item itself
-- [ ] Remove the guest mode wording
-- [ ] Specify what can be searched in search functionality
+- [x] Remove the guest mode wording
+- [x] Specify what can be searched in search functionality
 - [ ] Zustand Store
 
 ## Before release
