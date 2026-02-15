@@ -16,7 +16,7 @@
 - [x] Force item name validation - show reminder before submit (don't disable button)
 - [ignore] Prevent duplicate photos for same item
 - [x] Limit 'add more photo' button to photos only, exclude selected items
-- [ ] Move trash button from picture to the item itself
+- [x] Move trash button from picture to the item itself
 - [ ] Remove the guest mode wording
 - [ ] Specify what can be searched in search functionality
 - [ ] Zustand Store
