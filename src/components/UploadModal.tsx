@@ -44,59 +44,70 @@ const UploadModal: React.FC<UploadModalProps> = ({
     input.type = 'file';
     input.multiple = true;
     input.accept = 'image/*'; // Only accept images
+
     input.onchange = async (ev: Event) => {
       const target = ev.target as HTMLInputElement;
-      if (target.files) {
-        const files = Array.from(target.files);
-        const validFiles = files.filter(file => {
-          // Check if file is an image
-          if (!file.type.startsWith('image/')) {
-            console.warn('Skipping non-image file:', file.name);
-            return false;
-          }
+      if (!target.files) return;
 
-          // Check if file is too large
-          if (isFileTooLarge(file)) {
-            alert(`File ${file.name} is too large (${formatFileSize(file.size)}). Maximum size is ${formatFileSize(20 * 1024 * 1024)}.`);
-            return false;
-          }
+      const files = Array.from(target.files);
+      const validFiles: File[] = [];
+      const rejectedFiles: string[] = [];
 
-          return true;
-        });
-
-        // Process each valid file
-        for (const file of validFiles) {
-          try {
-            let imageDataUrl: string;
-
-            if (needsCompression(file)) {
-              console.log(`Compressing large image: ${file.name} (${formatFileSize(file.size)})`);
-              const compressed = await compressImage(file);
-              console.log(`Compressed ${file.name}: ${formatFileSize(compressed.originalSize)} → ${formatFileSize(compressed.fileSize)} (${(compressed.compressionRatio * 100).toFixed(1)}% reduction)`);
-              imageDataUrl = compressed.dataUrl;
-            } else {
-              imageDataUrl = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result as string);
-                reader.onerror = () => reject(new Error('Failed to read file'));
-                reader.readAsDataURL(file);
-              });
-            }
-
-            // Add the new image to the item
-            onUpdatePendingField(index, 'imageUrls', [...item.imageUrls, imageDataUrl]);
-          } catch (error) {
-            console.error('Failed to process image:', file.name, error);
-            alert(`Failed to process ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-          }
+      // Strictly filter for image files only
+      files.forEach(file => {
+        if (!file.type.startsWith('image/')) {
+          rejectedFiles.push(file.name);
+          return;
         }
 
-        // Update active preview to the last added image
-        if (validFiles.length > 0) {
-          onUpdatePendingField(index, 'activePreviewIdx', item.imageUrls.length);
+        // Check if file is too large
+        if (isFileTooLarge(file)) {
+          rejectedFiles.push(`${file.name} (too large)`);
+          return;
+        }
+
+        validFiles.push(file);
+      });
+
+      // Show feedback for rejected files
+      if (rejectedFiles.length > 0) {
+        const rejectedList = rejectedFiles.join(', ');
+        alert(`The following files were rejected (only images allowed):\n${rejectedList}`);
+      }
+
+      // Process each valid image file
+      for (const file of validFiles) {
+        try {
+          let imageDataUrl: string;
+
+          if (needsCompression(file)) {
+            console.log(`Compressing large image: ${file.name} (${formatFileSize(file.size)})`);
+            const compressed = await compressImage(file);
+            console.log(`Compressed ${file.name}: ${formatFileSize(compressed.originalSize)} → ${formatFileSize(compressed.fileSize)} (${(compressed.compressionRatio * 100).toFixed(1)}% reduction)`);
+            imageDataUrl = compressed.dataUrl;
+          } else {
+            imageDataUrl = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = () => reject(new Error('Failed to read file'));
+              reader.readAsDataURL(file);
+            });
+          }
+
+          // Add the new image to the item
+          onUpdatePendingField(index, 'imageUrls', [...item.imageUrls, imageDataUrl]);
+        } catch (error) {
+          console.error('Failed to process image:', file.name, error);
+          alert(`Failed to process ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
+
+      // Update active preview to the last added image
+      if (validFiles.length > 0) {
+        onUpdatePendingField(index, 'activePreviewIdx', item.imageUrls.length);
+      }
     };
+
     input.click();
   };
 
