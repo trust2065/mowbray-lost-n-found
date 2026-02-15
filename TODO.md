@@ -13,7 +13,7 @@
 
 ## Medium Priority
 - [ ] Add test plan documentation
-- [ ] Force item name validation - show reminder before submit (don't disable button)
+- [x] Force item name validation - show reminder before submit (don't disable button)
 - [ignore] Prevent duplicate photos for same item
 - [ ] Limit 'add more photo' button to photos only, exclude selected items
 - [ ] Move trash button from picture to the item itself
