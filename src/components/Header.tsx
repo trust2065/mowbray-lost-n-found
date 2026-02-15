@@ -40,18 +40,18 @@ const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onAdminToggle}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${isAdmin
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
-              title={isAdmin ? "Switch to Guest Mode" : "Switch to Admin Mode"}
+              title={isAdmin ? "Switch to normal mode" : "Switch to Admin Mode"}
             >
               <ShieldCheck className="w-4 h-4 mr-2" />
-              {isAdmin ? 'Admin' : 'Guest'}
+              {isAdmin ? 'Admin' : 'Normal'}
             </button>
           )}
         </div>
 
-        <div className="flex items-center gap-2 flex-1 max-w-md">
+        <div className="flex items-center gap-2 shrink-0 max-w-md">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
             <input

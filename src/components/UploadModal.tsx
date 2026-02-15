@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { X, Upload, Trash2, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { CATEGORIES, LOCATIONS } from '../constants';
 import type { PendingItem } from '../types';
@@ -118,7 +118,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
           <div>
             <h3 className="text-2xl font-black text-slate-800">Upload Photos</h3>
             <p className="text-[10px] text-slate-400 font-bold uppercase">
-              {isAdmin ? 'Staff Mode' : `Guest Mode: Max 5 items / 3 photos per item`}
+              {isAdmin ? 'Staff Mode' : `Max 5 items`}
             </p>
           </div>
           <button onClick={onClose} className="p-2">
@@ -155,12 +155,16 @@ const UploadModal: React.FC<UploadModalProps> = ({
                         alt="preview"
                       />
                     </div>
+                    <div className="flex items-center justify-between text-xs text-slate-400">
+                      <span className="">{item.imageUrls.length}/{isAdmin ? 10 : 3}</span>
+                      <div className="text-xs text-slate-300">(max {isAdmin ? 10 : 3})</div>
+                    </div>
                     <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                       {item.imageUrls.map((img, i) => (
                         <div
                           key={i}
                           onClick={() => onUpdatePendingField(index, 'activePreviewIdx', i)}
-                          className={`w-10 h-10 flex-shrink-0 cursor-pointer rounded-lg border-2 ${item.activePreviewIdx === i ? 'border-emerald-500' : 'border-transparent'
+                          className={`w-10 h-10 shrink-0 cursor-pointer rounded-lg border-2 ${item.activePreviewIdx === i ? 'border-emerald-500' : 'border-transparent'
                             }`}
                         >
                           <img src={img} className="w-full h-full object-cover rounded-md" alt="thumb" />
@@ -239,7 +243,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                     </div>
                     <textarea
                       placeholder="Description..."
-                      className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm min-h-[70px]"
+                      className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm min-h-17.5"
                       value={item.description}
                       onChange={(e) => onUpdatePendingField(index, 'description', e.target.value)}
                     />
@@ -268,7 +272,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
         {pendingItems.length > 0 && (
           <div className="p-8 border-t flex items-center gap-5">
             <button onClick={onClose} className="flex-1 py-4 text-slate-400 font-bold">Cancel</button>
-            <button onClick={onConfirmUpload} className="flex-[2] py-4.5 bg-emerald-600 text-white font-black rounded-3xl shadow-2xl active:scale-95 transition-all">
+            <button onClick={onConfirmUpload} className="flex-2 py-4.5 bg-emerald-600 text-white font-black rounded-3xl shadow-2xl active:scale-95 transition-all">
               Post {pendingItems.length} Item(s)
             </button>
           </div>
