@@ -35,6 +35,45 @@ const UploadModal: React.FC<UploadModalProps> = ({
   // Create a separate ref for the "add another item" button
   const addItemInputRef = React.useRef<HTMLInputElement>(null);
 
+  const handleInitialFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const target = e.target;
+    if (!target.files) return;
+
+    const files = Array.from(target.files);
+
+    // Restrict to 5 items maximum
+    if (files.length > 5) {
+      alert(`Maximum 5 items allowed. You selected ${files.length} files. Only the first 5 will be processed.`);
+      // Reset input and re-trigger with only first 5 files
+      const dt = new DataTransfer();
+      files.slice(0, 5).forEach(file => dt.items.add(file));
+      target.files = dt.files;
+    }
+
+    onFileSelect(e);
+  };
+
+  const handleAddAnotherItemFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const target = e.target;
+    if (!target.files) return;
+
+    const files = Array.from(target.files);
+    const remainingCapacity = isAdmin ? 10 : 5;
+    const currentItems = pendingItems.length;
+    const maxAdditionalItems = remainingCapacity - currentItems;
+
+    // Restrict to remaining capacity
+    if (files.length > maxAdditionalItems) {
+      alert(`You can only add ${maxAdditionalItems} more item(s). You selected ${files.length} files. Only the first ${maxAdditionalItems} will be processed.`);
+      // Reset input and re-trigger with only allowed number of files
+      const dt = new DataTransfer();
+      files.slice(0, maxAdditionalItems).forEach(file => dt.items.add(file));
+      target.files = dt.files;
+    }
+
+    onFileSelect(e);
+  };
+
   const handleAddAnotherItem = () => {
     addItemInputRef.current?.click();
   };
@@ -133,14 +172,14 @@ const UploadModal: React.FC<UploadModalProps> = ({
               className="cursor-pointer border-4 border-dashed rounded-6xl p-20 text-center hover:border-emerald-300"
             >
               <Upload className="w-14 h-14 mx-auto text-slate-200 mb-5" />
-              <p className="text-xl font-black text-slate-700">Select Item Photo(s)</p>
+              <p className="text-xl font-black text-slate-700">Select up to 5 photo(s)</p>
               <input
                 type="file"
                 ref={fileInputRef}
                 className="hidden"
                 accept="image/*"
                 multiple
-                onChange={onFileSelect}
+                onChange={handleInitialFileSelect}
               />
             </div>
           ) : (
@@ -255,7 +294,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                 disabled={!isAdmin && pendingItems.length >= 5}
                 className="w-full py-5 border-2 border-dashed rounded-4xl text-slate-400 font-black text-sm hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                + Add Another Item
+                + Add More Photos
               </button>
               <input
                 type="file"
@@ -263,7 +302,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                 className="hidden"
                 accept="image/*"
                 multiple
-                onChange={onFileSelect}
+                onChange={handleAddAnotherItemFileSelect}
               />
             </div>
           )}
