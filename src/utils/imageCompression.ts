@@ -133,7 +133,7 @@ export const compressImage = (
           return bestResult;
         };
 
-        findOptimalQuality().then(({ dataUrl, quality }) => {
+        findOptimalQuality().then(({ dataUrl }) => {
           // Calculate final size with safety checks
           if (!dataUrl || !dataUrl.includes(',')) {
             // Fallback to basic compression if adaptive failed

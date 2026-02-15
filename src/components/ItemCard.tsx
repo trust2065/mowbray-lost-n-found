@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Tag, MapPin, Calendar } from 'lucide-react';
 import Gallery from './Gallery';
 import type { Item, ViewMode } from '../types';
@@ -9,7 +9,7 @@ interface ItemCardProps {
   onPhotoClick: (urls: string[], index: number) => void;
 }
 
-const ItemCard: React.FC<ItemCardProps> = ({ item, viewMode, onPhotoClick }) => {
+const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, onPhotoClick }) => {
   return (
     <div className={
       viewMode === 'grid'
@@ -47,6 +47,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, viewMode, onPhotoClick }) => 
       </div>
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  // Only re-render when item ID or viewMode changes
+  return prevProps.item.id === nextProps.item.id &&
+    prevProps.viewMode === nextProps.viewMode;
+});
 
 export default ItemCard;

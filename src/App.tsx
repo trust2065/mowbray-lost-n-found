@@ -83,7 +83,9 @@ const App: React.FC = () => {
     };
   }, [cleanupReaders]);
 
-  // --- Actions & Handlers ---
+  const handlePhotoClick = useCallback((urls: string[], index: number) => {
+    setPhotoViewer({ isOpen: true, urls, index });
+  }, []);
 
   const handleAdminLogout = useCallback((): void => setIsAdmin(false), []);
 
@@ -200,7 +202,7 @@ const App: React.FC = () => {
                 key={item.id}
                 item={item}
                 viewMode={viewMode}
-                onPhotoClick={(urls, index) => setPhotoViewer({ isOpen: true, urls, index })}
+                onPhotoClick={handlePhotoClick}
               />
             ))}
           </div>

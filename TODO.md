@@ -10,6 +10,7 @@
 - [ ] Rate Limiting：為了防止 Gemini API 被惡意刷爆，可以加上 express-rate-limit。
 - [ ] Refine rule for storage bucket and firestore
 - [x] DO NOT refresh the photo after upload success
+- [x] Image Cache (be aware of the network tab 'disable cache')
 
 ## Medium Priority
 - [ ] Add test plan documentation

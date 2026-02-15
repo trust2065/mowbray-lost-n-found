@@ -15,7 +15,13 @@ const Gallery: React.FC<GalleryProps> = ({ urls, onPhotoClick }) => {
       className="relative w-full h-full group cursor-zoom-in"
       onClick={() => onPhotoClick?.(idx)}
     >
-      <img src={urls[idx]} className="w-full h-full object-cover transition-opacity duration-300" alt="item" />
+      <img
+        src={urls[idx]}
+        className="w-full h-full object-cover transition-opacity duration-300"
+        alt="item"
+        loading="lazy"
+        decoding="async"
+      />
       {urls.length > 1 && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 px-2 py-1 bg-black/20 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
           {urls.map((_, i) => (

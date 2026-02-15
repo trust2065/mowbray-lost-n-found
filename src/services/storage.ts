@@ -4,7 +4,12 @@ import { storage } from '../firebase/config';
 export const uploadImageToFirebase = async (file: File, itemId: string): Promise<string> => {
   const storageRef = ref(storage, `lost-items/${itemId}/${Date.now()}-${file.name}`);
 
-  const snapshot = await uploadBytes(storageRef, file);
+  const metadata = {
+    contentType: file.type,
+    cacheControl: 'public,max-age=31536000,immutable',
+  };
+
+  const snapshot = await uploadBytes(storageRef, file, metadata);
   const downloadURL = await getDownloadURL(snapshot.ref);
 
   return downloadURL;
