@@ -154,12 +154,6 @@ const UploadModal: React.FC<UploadModalProps> = ({
                         className="w-full h-full object-cover"
                         alt="preview"
                       />
-                      <button
-                        onClick={() => onRemovePendingItem(item.id)}
-                        className="absolute top-2 right-2 bg-rose-500 text-white p-1.5 rounded-full border-2 border-white"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
                     </div>
                     <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                       {item.imageUrls.map((img, i) => (
@@ -184,6 +178,18 @@ const UploadModal: React.FC<UploadModalProps> = ({
                   </div>
 
                   <div className="flex-1 space-y-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase">
+                        Item {index + 1}
+                      </div>
+                      <button
+                        onClick={() => onRemovePendingItem(item.id)}
+                        className="bg-rose-500 text-white p-2 rounded-lg hover:bg-rose-600 transition-colors"
+                        title="Remove item"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                     <div className="flex items-center gap-4">
                       <div className="flex-1 relative">
                         <input
