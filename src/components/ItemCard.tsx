@@ -13,13 +13,13 @@ const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, onPhotoClick }
   return (
     <div className={
       viewMode === 'grid'
-        ? "bg-white rounded-[2.5rem] overflow-hidden border hover:shadow-2xl transition-all"
-        : "bg-white p-5 rounded-[2rem] border flex items-center gap-6"
+        ? "bg-white rounded-4xl overflow-hidden border hover:shadow-2xl transition-all"
+        : "bg-white p-5 rounded-4xl border flex items-center gap-6"
     }>
       <div className={
         viewMode === 'grid'
-          ? "aspect-[4/5] bg-slate-100"
-          : "w-28 h-28 flex-shrink-0 rounded-[1.5rem] overflow-hidden"
+          ? "aspect-4/5 bg-slate-100"
+          : "w-28 h-28 shrink-0 rounded-3xl overflow-hidden"
       }>
         <Gallery urls={item.imageUrls} onPhotoClick={(index) => onPhotoClick(item.imageUrls, index)} />
       </div>
