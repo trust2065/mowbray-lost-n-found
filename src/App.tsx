@@ -55,7 +55,7 @@ const App: React.FC = () => {
     index: 0
   });
 
-  const { autoFillItem, cancelAiFill } = useGeminiAPI();
+  const { autoFillItem, cancelAiFill, cleanup } = useGeminiAPI();
   const {
     handleFileSelect,
     updatePendingField,
@@ -80,8 +80,11 @@ const App: React.FC = () => {
 
       // Cleanup all FileReaders
       cleanupReaders();
+
+      // Cleanup AI requests
+      cleanup(abortControllers);
     };
-  }, [cleanupReaders]);
+  }, []); // Empty dependency array - only run on unmount
 
   const handlePhotoClick = useCallback((urls: string[], index: number) => {
     setPhotoViewer({ isOpen: true, urls, index });
@@ -154,6 +157,8 @@ const App: React.FC = () => {
         setSearchQuery={setSearchQuery}
         viewMode={viewMode}
         setViewMode={setViewMode}
+        isAdmin={isAdmin}
+        onAdminToggle={() => setIsAdmin(!isAdmin)}
         onTitleDoubleClick={() => setShowPasscodeModal(true)}
       />
 

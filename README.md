@@ -46,23 +46,26 @@ cp .env.example .env
 
 # Edit .env with your actual values:
 VITE_GEMINI_API_KEY=your_gemini_api_key_here
-VITE_ADMIN_PASSCODE=1279
+VITE_ADMIN_PASSCODE=your_admin_passcode_here
 ```
 
 ### Running the Application
 
-1. **Start the backend proxy server:**
+1. **Start both servers (recommended):**
 ```bash
-cd server
+# In root directory - starts both proxy server and dev server
 npm start
-# Server runs on http://localhost:3001
+# Proxy server: http://localhost:3001
+# Frontend: http://localhost:5173
 ```
 
-2. **Start the frontend development server:**
+2. **Start servers separately:**
 ```bash
-# In the root directory
+# Terminal 1 - Backend proxy server
+cd server && npm start
+
+# Terminal 2 - Frontend development server  
 npm run dev
-# Frontend runs on http://localhost:5173
 ```
 
 ### Production Build

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, LayoutGrid, List } from 'lucide-react';
+import { Search, LayoutGrid, List, ShieldCheck } from 'lucide-react';
 import type { ViewMode } from '../types';
 
 interface HeaderProps {
@@ -8,6 +8,8 @@ interface HeaderProps {
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
   onTitleDoubleClick: () => void;
+  isAdmin?: boolean;
+  onAdminToggle?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -15,20 +17,39 @@ const Header: React.FC<HeaderProps> = ({
   setSearchQuery,
   viewMode,
   setViewMode,
-  onTitleDoubleClick
+  onTitleDoubleClick,
+  isAdmin = false,
+  onAdminToggle
 }) => {
   return (
     <header className="sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-4 shadow-sm">
       <div className="max-w-6xl mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-black tracking-tight text-slate-800">
-          Mowbray Public
-          <span
-            onDoubleClick={onTitleDoubleClick}
-            className="text-[10px] uppercase tracking-[0.25em] text-emerald-600 font-bold block mt-1 cursor-default select-none"
-          >
-            Lost & Found Hub
-          </span>
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-black tracking-tight text-slate-800">
+            Mowbray Public
+            <span
+              onDoubleClick={onTitleDoubleClick}
+              className="text-[10px] uppercase tracking-[0.25em] text-emerald-600 font-bold block mt-1 cursor-default select-none"
+            >
+              Lost & Found Hub
+            </span>
+          </h1>
+
+          {/* Admin Toggle for Development */}
+          {onAdminToggle && (
+            <button
+              onClick={onAdminToggle}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${isAdmin
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              title={isAdmin ? "Switch to Guest Mode" : "Switch to Admin Mode"}
+            >
+              <ShieldCheck className="w-4 h-4 mr-2" />
+              {isAdmin ? 'Admin' : 'Guest'}
+            </button>
+          )}
+        </div>
 
         <div className="flex items-center gap-2 flex-1 max-w-md">
           <div className="relative flex-1">
