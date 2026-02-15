@@ -1,7 +1,8 @@
-import React from 'react';
-import { X, Upload, Trash2, Loader2, Sparkles } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Upload, Trash2, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { CATEGORIES, LOCATIONS } from '../constants';
 import type { PendingItem } from '../types';
+import { validateNameTag } from '../hooks/useFileUpload';
 import { compressImage, needsCompression, formatFileSize, isFileTooLarge } from '../utils/imageCompression';
 
 interface UploadModalProps {
@@ -173,13 +174,20 @@ const UploadModal: React.FC<UploadModalProps> = ({
 
                   <div className="flex-1 space-y-5">
                     <div className="flex items-center gap-4">
-                      <input
-                        type="text"
-                        placeholder="Name on item"
-                        className="flex-1 bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-black text-slate-700"
-                        value={item.nameTag}
-                        onChange={(e) => onUpdatePendingField(index, 'nameTag', e.target.value)}
-                      />
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          placeholder="Name on item"
+                          className="flex-1 bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-black text-slate-700"
+                          value={item.nameTag}
+                          onChange={(e) => onUpdatePendingField(index, 'nameTag', e.target.value)}
+                        />
+                        {item.nameTag && !validateNameTag(item.nameTag).isValid && (
+                          <div className="absolute -top-2 -right-2 bg-amber-100 text-amber-700 p-1 rounded-full">
+                            <AlertCircle className="w-4 h-4" />
+                          </div>
+                        )}
+                      </div>
                       {isAdmin && (
                         <button
                           onClick={() => onAutoFillItem(index)}
@@ -190,6 +198,12 @@ const UploadModal: React.FC<UploadModalProps> = ({
                         </button>
                       )}
                     </div>
+                    {item.nameTag && !validateNameTag(item.nameTag).isValid && (
+                      <div className="flex items-center gap-2 text-amber-600 text-xs">
+                        <AlertCircle className="w-3 h-3" />
+                        <span>{validateNameTag(item.nameTag).message}</span>
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 gap-4">
                       <select
                         className="bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600"

@@ -4,6 +4,23 @@ import { uploadMultipleImages } from '../services/storage';
 import { addItem } from '../services/firestore';
 import { compressImage, needsCompression, formatFileSize, isFileTooLarge } from '../utils/imageCompression';
 
+// Validation helper for name tags
+export const validateNameTag = (nameTag: string): { isValid: boolean; message?: string; } => {
+  // Check for empty, null, or undefined
+  if (!nameTag || nameTag.trim() === '') {
+    return { isValid: false, message: 'Name cannot be empty' };
+  }
+
+  // Check for generic placeholder names
+  const genericNames = ['unknown', 'item', 'unnamed', 'lost item', 'found item'];
+  if (genericNames.includes(nameTag.toLowerCase().trim())) {
+    return { isValid: false, message: 'Please provide a more specific name' };
+  }
+
+  // 1+ character names are valid
+  return { isValid: true };
+};
+
 export const useFileUpload = (
   lastUsedCategory: string,
   lastUsedLocation: string,
@@ -128,6 +145,31 @@ export const useFileUpload = (
     setShowSuccessToast: (show: boolean) => void,
     setItems?: React.Dispatch<React.SetStateAction<Item[]>>
   ): Promise<void> => {
+    // Validate all items before upload
+    const validationIssues = pendingItems.map((item, index) => {
+      const validation = validateNameTag(item.nameTag);
+      return {
+        index,
+        item,
+        validation
+      };
+    }).filter(issue => !issue.validation.isValid);
+
+    // If there are validation issues, show confirmation dialog
+    if (validationIssues.length > 0) {
+      const issueMessages = validationIssues.map(issue =>
+        `Item ${issue.index + 1}: ${issue.validation.message}`
+      ).join('\n');
+
+      const proceedAnyway = confirm(
+        `Some items have name issues:\n\n${issueMessages}\n\nContinue anyway?`
+      );
+
+      if (!proceedAnyway) {
+        return; // User chose to go back and fix issues
+      }
+    }
+
     try {
       // Create optimistic items for immediate UI update
       const optimisticItems: Item[] = pendingItems.map((pendingItem, index) => ({

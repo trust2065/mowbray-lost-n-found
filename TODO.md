@@ -7,14 +7,14 @@
 - [x] Format found date to readable format (2026-02-14T00:00:00.000Z)
 - [x] Add item to list and close dialog immediately while submitting in background
 - [x] Fix items disappearing on page refresh - ensure proper Firebase persistence
-- [ ] Rate Limiting：為了防止 Gemini API 被惡意刷爆，可以加上 express-rate-limit。
+- [x] Rate Limiting：為了防止 Gemini API 被惡意刷爆，可以加上 express-rate-limit。
 - [x] DO NOT refresh the photo after upload success
 - [x] Image Cache (be aware of the network tab 'disable cache')
 
 ## Medium Priority
 - [ ] Add test plan documentation
 - [ ] Force item name validation - show reminder before submit (don't disable button)
-- [ ] Prevent duplicate photos for same item
+- [ignore] Prevent duplicate photos for same item
 - [ ] Limit 'add more photo' button to photos only, exclude selected items
 - [ ] Move trash button from picture to the item itself
 - [ ] Remove the guest mode wording
