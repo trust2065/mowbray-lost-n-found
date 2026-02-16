@@ -208,7 +208,7 @@ const App: React.FC = () => {
             <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100">{isAdmin ? 'All items' : 'Recent Discoveries'}</h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm italic">{isAdmin ? `${filteredItems.length} items` : `Items found in the last 14 days.`}</p>
           </div>
-          <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 bg-blue-900 text-white px-7 py-4 rounded-2xl font-bold shadow-xl active:scale-95 transition-all hover:bg-blue-800 dark:bg-emerald-600 dark:hover:bg-emerald-500">
+          <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 bg-blue-900 text-white px-7 py-4 rounded-2xl font-bold shadow-xl active:scale-95 transition-all hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500">
             <Plus className="w-5 h-5" />
             <span>Post New Item</span>
           </button>

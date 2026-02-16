@@ -169,7 +169,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
           {pendingItems.length === 0 ? (
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="cursor-pointer border-4 border-dashed border-slate-200 dark:border-slate-700 rounded-6xl p-20 text-center hover:border-emerald-300 dark:hover:border-emerald-500 transition-colors"
+              className="cursor-pointer border-4 border-dashed border-slate-200 dark:border-slate-700 rounded-6xl p-20 text-center hover:border-blue-300 dark:hover:border-blue-500 transition-colors"
             >
               <Upload className="w-14 h-14 mx-auto text-slate-200 dark:text-slate-600 mb-5" />
               <p className="text-xl font-black text-slate-700 dark:text-slate-300">Select up to 5 photo(s)</p>
@@ -208,7 +208,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                         <div
                           key={i}
                           onClick={() => onUpdatePendingField(index, 'activePreviewIdx', i)}
-                          className={`w-10 h-10 shrink-0 cursor-pointer rounded-lg border-2 overflow-hidden ${item.activePreviewIdx === i ? 'border-emerald-500' : 'border-transparent'
+                          className={`w-10 h-10 shrink-0 cursor-pointer rounded-lg border-2 overflow-hidden ${item.activePreviewIdx === i ? 'border-blue-500' : 'border-transparent'
                             }`}
                         >
                           <img src={img} className="w-full h-full object-cover" alt="thumb" />
@@ -217,7 +217,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                       {item.imageUrls.length < (isAdmin ? 10 : 3) && (
                         <button
                           onClick={() => handleAddMorePhotos(item, index)}
-                          className="w-10 h-10 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg flex items-center justify-center text-slate-300 dark:text-slate-500 hover:border-emerald-500 hover:text-emerald-500 transition-colors"
+                          className="w-10 h-10 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg flex items-center justify-center text-slate-300 dark:text-slate-500 hover:border-blue-500 hover:text-blue-500 transition-colors"
                         >
                           +
                         </button>
@@ -231,7 +231,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                         <input
                           type="text"
                           placeholder="Name on item"
-                          className="w-full bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-black text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                          className="w-full bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-black text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                           value={item.nameTag}
                           onChange={(e) => onUpdatePendingField(index, 'nameTag', e.target.value)}
                         />
@@ -245,7 +245,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                         <button
                           onClick={() => onAutoFillItem(index)}
                           disabled={item.isAnalyzing}
-                          className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-4 py-3 rounded-2xl text-[11px] font-black flex items-center gap-2 shadow-sm whitespace-nowrap hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
+                          className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-3 rounded-2xl text-[11px] font-black flex items-center gap-2 shadow-sm whitespace-nowrap hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
                         >
                           {item.isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} AI Fill
                         </button>
@@ -266,14 +266,14 @@ const UploadModal: React.FC<UploadModalProps> = ({
                     )}
                     <div className="grid grid-cols-2 gap-4">
                       <select
-                        className="bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer transition-all"
+                        className="bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-all"
                         value={item.category}
                         onChange={(e) => onUpdatePendingField(index, 'category', e.target.value)}
                       >
                         {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                       <select
-                        className="bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer transition-all"
+                        className="bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-all"
                         value={item.location}
                         onChange={(e) => onUpdatePendingField(index, 'location', e.target.value)}
                       >
@@ -282,7 +282,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                     </div>
                     <textarea
                       placeholder="Description..."
-                      className="w-full bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-5 py-3 text-sm min-h-17.5 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-all resize-none"
+                      className="w-full bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-5 py-3 text-sm min-h-17.5 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
                       value={item.description}
                       onChange={(e) => onUpdatePendingField(index, 'description', e.target.value)}
                     />
@@ -292,7 +292,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
               <button
                 onClick={handleAddAnotherItem}
                 disabled={!isAdmin && pendingItems.length >= 5}
-                className="w-full py-5 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-4xl text-slate-400 dark:text-slate-500 font-black text-sm hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-5 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-4xl text-slate-400 dark:text-slate-500 font-black text-sm hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 + Add More Photos
               </button>
@@ -311,7 +311,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
         {pendingItems.length > 0 && (
           <div className="p-8 border-t dark:border-slate-700 flex items-center gap-5">
             <button onClick={onClose} className="flex-1 py-4 text-slate-400 dark:text-slate-500 font-bold hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Cancel</button>
-            <button onClick={onConfirmUpload} className="flex-2 py-4.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-3xl shadow-2xl hover:shadow-emerald-500/20 active:scale-95 transition-all">
+            <button onClick={onConfirmUpload} className="flex-2 py-4.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-3xl shadow-2xl hover:shadow-blue-500/20 active:scale-95 transition-all">
               Post {pendingItems.length} Item(s)
             </button>
           </div>

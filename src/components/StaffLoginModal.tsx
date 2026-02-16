@@ -26,10 +26,10 @@ const StaffLoginModal: React.FC<StaffLoginModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
       <div className="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[2.5rem] p-10 shadow-2xl">
-        <div className="bg-emerald-50 dark:bg-emerald-900/30 w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <KeyRound className="text-emerald-600 dark:text-emerald-400 w-7 h-7" />
+        <div className="bg-blue-50 dark:bg-blue-900/30 w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <KeyRound className="text-blue-600 dark:text-blue-400 w-7 h-7" />
         </div>
         <h3 className="text-xl font-black text-center text-slate-800 dark:text-slate-100 mb-6">Staff Access</h3>
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -37,7 +37,7 @@ const StaffLoginModal: React.FC<StaffLoginModalProps> = ({
             type="password"
             placeholder="••••"
             autoFocus
-            className={`w-full text-center text-3xl tracking-[0.5em] bg-slate-50 dark:bg-slate-700 dark:text-white border-2 rounded-2xl py-4 outline-none transition-colors ${loginError ? 'border-rose-200 dark:border-rose-800 focus:border-rose-500' : 'border-slate-100 dark:border-slate-600 focus:border-emerald-500'
+            className={`w-full text-center text-3xl tracking-[0.5em] bg-slate-50 dark:bg-slate-700 dark:text-white border-2 rounded-2xl py-4 outline-none transition-colors ${loginError ? 'border-rose-200 dark:border-rose-800 focus:border-rose-500' : 'border-slate-100 dark:border-slate-600 focus:border-blue-500'
               }`}
             value={passcodeAttempt}
             onChange={(e) => setPasscodeAttempt(e.target.value)}
@@ -55,7 +55,7 @@ const StaffLoginModal: React.FC<StaffLoginModalProps> = ({
             <div className="flex-1">
               <button
                 type="submit"
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl shadow-lg hover:shadow-emerald-500/20 active:scale-95 transition-all"
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl shadow-lg hover:shadow-blue-500/20 active:scale-95 transition-all"
               >
                 Login
               </button>

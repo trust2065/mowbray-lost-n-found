@@ -74,7 +74,7 @@ const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={onAdminToggle}
                 className={`hidden sm:flex items-center px-3 py-1 rounded-full text-xs font-bold transition-all ${isAdmin
-                  ? 'bg-emerald-600 text-white ring-2 ring-emerald-400'
+                  ? 'bg-blue-600 text-white ring-2 ring-blue-400'
                   : 'bg-blue-900/50 text-blue-200 hover:bg-blue-800 border border-blue-700'
                   }`}
               >
@@ -90,7 +90,7 @@ const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={onAdminToggle}
                 className={`p-1.5 rounded-lg transition-all ${isAdmin
-                  ? 'bg-emerald-600 text-white'
+                  ? 'bg-blue-600 text-white'
                   : 'bg-blue-950/40 text-blue-200 border border-blue-800'
                   }`}
               >
@@ -100,13 +100,13 @@ const Header: React.FC<HeaderProps> = ({
             <div className="flex bg-blue-950/40 p-1 rounded-xl border border-blue-800 items-center">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-emerald-600 text-white shadow-md' : 'text-blue-200'}`}
+                className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-200'}`}
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-emerald-600 text-white shadow-md' : 'text-blue-200'}`}
+                className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-200'}`}
               >
                 <List className="w-3.5 h-3.5" />
               </button>

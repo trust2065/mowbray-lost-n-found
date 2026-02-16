@@ -15,8 +15,8 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
       <button
         onClick={() => setSelectedCategory('All')}
         className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === 'All'
-            ? 'bg-emerald-600 text-white shadow-md'
-            : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700'
+          ? 'bg-blue-600 text-white shadow-md'
+          : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700'
           }`}
       >
         All Items
@@ -26,8 +26,8 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
           key={cat}
           onClick={() => setSelectedCategory(cat)}
           className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === cat
-              ? 'bg-emerald-600 text-white shadow-md'
-              : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700'
+            ? 'bg-blue-600 text-white shadow-md'
+            : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700'
             }`}
         >
           {cat}
