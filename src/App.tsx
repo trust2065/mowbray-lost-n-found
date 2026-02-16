@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { Plus, ShieldCheck, Search } from 'lucide-react';
+import { Plus, ShieldCheck, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ADMIN_PASSCODE, CATEGORIES, LOCATIONS } from './constants';
 import type { Item, PendingItem, ViewMode } from './types';
 import { useGeminiAPI } from './hooks/useGeminiAPI';
@@ -43,6 +43,8 @@ const App: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const ITEMS_PER_PAGE = 10;
 
   const [lastUsedCategory, setLastUsedCategory] = useState<string>(CATEGORIES[0]);
   const [lastUsedLocation, setLastUsedLocation] = useState<string>(LOCATIONS[0]);
@@ -127,6 +129,17 @@ const App: React.FC = () => {
     });
   }, [items, searchQuery, selectedCategory, isAdmin]);
 
+  const paginatedItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredItems, currentPage]);
+
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, isAdmin]);
+
   const handleFileSelectWrapper = (e: React.ChangeEvent<HTMLInputElement>): void => {
     handleFileSelect(e, setPendingItems, isAdmin, pendingItems);
   };
@@ -207,16 +220,42 @@ const App: React.FC = () => {
             <p className="text-lg font-bold">No items found.</p>
           </div>
         ) : (
-          <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6" : "space-y-4"}>
-            {filteredItems.map(item => (
-              <ItemCard
-                key={item.id}
-                item={item}
-                viewMode={viewMode}
-                onPhotoClick={handlePhotoClick}
-              />
-            ))}
-          </div>
+          <>
+            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6" : "space-y-4"}>
+              {paginatedItems.map(item => (
+                <ItemCard
+                  key={item.id}
+                  item={item}
+                  viewMode={viewMode}
+                  onPhotoClick={handlePhotoClick}
+                />
+              ))}
+            </div>
+
+            {filteredItems.length > ITEMS_PER_PAGE && (
+              <div className="flex justify-center items-center gap-4 mt-8 pb-4">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                </button>
+                <span className="text-sm font-bold text-slate-600 dark:text-slate-400">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
 
