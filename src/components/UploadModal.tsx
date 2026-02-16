@@ -264,21 +264,27 @@ const UploadModal: React.FC<UploadModalProps> = ({
                         <span>{validateNameTag(item.nameTag).message}</span>
                       </div>
                     )}
-                    <div className="grid grid-cols-2 gap-4">
-                      <select
-                        className="bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-all"
-                        value={item.category}
-                        onChange={(e) => onUpdatePendingField(index, 'category', e.target.value)}
-                      >
-                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                      <select
-                        className="bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-all"
-                        value={item.location}
-                        onChange={(e) => onUpdatePendingField(index, 'location', e.target.value)}
-                      >
-                        {LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
-                      </select>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-slate-400 dark:text-slate-500 ml-2 uppercase">Category</label>
+                        <select
+                          className="w-full bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-all appearance-none"
+                          value={item.category}
+                          onChange={(e) => onUpdatePendingField(index, 'category', e.target.value)}
+                        >
+                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-slate-400 dark:text-slate-500 ml-2 uppercase">Location</label>
+                        <select
+                          className="w-full bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-all appearance-none"
+                          value={item.location}
+                          onChange={(e) => onUpdatePendingField(index, 'location', e.target.value)}
+                        >
+                          {LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
+                        </select>
+                      </div>
                     </div>
                     <textarea
                       placeholder="Description..."
