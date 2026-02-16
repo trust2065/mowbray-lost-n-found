@@ -8,11 +8,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { imageData, prompt } = req.body;
+  const { imageData, prompt, mimeType } = req.body;
   const API_KEY = process.env.VITE_GEMINI_API_KEY;
 
   try {
-    const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
+    const MODEL_NAME = "gemini-2.0-flash";
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`,
       {
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
           contents: [{
             parts: [
               { text: prompt },
-              { inlineData: { mimeType: "image/png", data: imageData } }
+              { inlineData: { mimeType: mimeType || "image/png", data: imageData } }
             ]
           }],
           generationConfig: { responseMimeType: "application/json" }

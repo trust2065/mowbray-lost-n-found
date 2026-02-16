@@ -50,11 +50,15 @@ export const useGeminiAPI = () => {
         throw new Error('Request was aborted before proxy call');
       }
 
+      // Extract MIME type from data URL (e.g., "image/jpeg" from "data:image/jpeg;base64,...")
+      const mimeType = imageData.substring(imageData.indexOf(":") + 1, imageData.indexOf(";"));
+
       const proxyResponse = await fetch('/api/gemini/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           imageData: imageData.split(',')[1], // Remove data:image/png;base64, prefix
+          mimeType,
           prompt
         }),
         signal: controller.signal
