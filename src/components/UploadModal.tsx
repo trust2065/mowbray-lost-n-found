@@ -157,7 +157,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
           <div>
             <h3 className="text-2xl font-black text-slate-800">Upload Photos</h3>
             <p className="text-[10px] text-slate-400 font-bold uppercase">
-              {isAdmin ? 'Staff Mode' : `Max 5 items`}
+              {isAdmin ? 'Staff Mode' : ``}
             </p>
           </div>
           <button onClick={onClose} className="p-2">
@@ -185,8 +185,11 @@ const UploadModal: React.FC<UploadModalProps> = ({
           ) : (
             <div className="space-y-10">
               {pendingItems.map((item, index) => (
-                <div key={item.id} className="bg-white p-7 rounded-4xl shadow-xl flex flex-col sm:flex-row gap-8">
+                <div key={item.id} className="bg-white p-7 rounded-4xl shadow-xl flex flex-col sm:flex-row gap-8 relative">
                   <div className="w-full sm:w-36 shrink-0 flex flex-col gap-4">
+                    <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                      Item {index + 1}
+                    </div>
                     <div className="relative aspect-square rounded-4xl overflow-hidden bg-slate-100">
                       <img
                         src={item.imageUrls[item.activePreviewIdx]}
@@ -194,10 +197,12 @@ const UploadModal: React.FC<UploadModalProps> = ({
                         alt="preview"
                       />
                     </div>
-                    <div className="flex items-center justify-between text-xs text-slate-400">
-                      <span className="">{item.imageUrls.length}/{isAdmin ? 10 : 3}</span>
-                      <div className="text-xs text-slate-300">(max {isAdmin ? 10 : 3})</div>
-                    </div>
+                    {item.imageUrls.length > 1 && (
+                      <div className="flex items-center justify-end gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        <span>{item.imageUrls.length}/{isAdmin ? 10 : 3}</span>
+                        <span className="opacity-40">(max {isAdmin ? 10 : 3})</span>
+                      </div>
+                    )}
                     <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                       {item.imageUrls.map((img, i) => (
                         <div
@@ -221,29 +226,17 @@ const UploadModal: React.FC<UploadModalProps> = ({
                   </div>
 
                   <div className="flex-1 space-y-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase">
-                        Item {index + 1}
-                      </div>
-                      <button
-                        onClick={() => onRemovePendingItem(item.id)}
-                        className="bg-rose-500 text-white p-2 rounded-lg hover:bg-rose-600 transition-colors"
-                        title="Remove item"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
                     <div className="flex items-center gap-4">
                       <div className="flex-1 relative">
                         <input
                           type="text"
                           placeholder="Name on item"
-                          className="flex-1 bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-black text-slate-700"
+                          className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-black text-slate-700"
                           value={item.nameTag}
                           onChange={(e) => onUpdatePendingField(index, 'nameTag', e.target.value)}
                         />
                         {item.nameTag && !validateNameTag(item.nameTag).isValid && (
-                          <div className="absolute -top-2 -right-2 bg-amber-100 text-amber-700 p-1 rounded-full">
+                          <div className="absolute top-3 right-3 bg-amber-100 text-amber-700 p-1 rounded-full">
                             <AlertCircle className="w-4 h-4" />
                           </div>
                         )}
@@ -257,6 +250,13 @@ const UploadModal: React.FC<UploadModalProps> = ({
                           {item.isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} AI Fill
                         </button>
                       )}
+                      <button
+                        onClick={() => onRemovePendingItem(item.id)}
+                        className="bg-rose-50 text-rose-500 p-3 rounded-2xl hover:bg-rose-100 transition-colors shrink-0"
+                        title="Remove item"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                     {item.nameTag && !validateNameTag(item.nameTag).isValid && (
                       <div className="flex items-center gap-2 text-amber-600 text-xs">

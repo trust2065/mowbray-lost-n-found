@@ -186,8 +186,8 @@ const App: React.FC = () => {
 
         <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-black text-slate-800">{isAdmin ? 'School Archive' : 'Recent Discoveries'}</h2>
-            <p className="text-slate-500 text-sm italic">{isAdmin ? `Records: ${filteredItems.length}` : `Items found in the last 14 days.`}</p>
+            <h2 className="text-2xl font-black text-slate-800">{isAdmin ? 'All items' : 'Recent Discoveries'}</h2>
+            <p className="text-slate-500 text-sm italic">{isAdmin ? `${filteredItems.length} items` : `Items found in the last 14 days.`}</p>
           </div>
           <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 bg-slate-900 text-white px-7 py-4 rounded-2xl font-bold shadow-xl active:scale-95 transition-all">
             <Plus className="w-5 h-5" />
