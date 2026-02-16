@@ -178,7 +178,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans transition-colors duration-200 dark:bg-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans transition-colors duration-200 dark:bg-slate-900 dark:text-slate-100 flex flex-col">
       <Header
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -191,7 +191,7 @@ const App: React.FC = () => {
         toggleDarkMode={toggleDarkMode}
       />
 
-      <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 flex-1 w-full">
         {isAdmin && (
           <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-3xl flex items-center justify-between transition-colors">
             <div className="flex items-center gap-3 text-blue-800 dark:text-blue-200">
