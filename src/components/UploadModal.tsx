@@ -151,11 +151,11 @@ const UploadModal: React.FC<UploadModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
-      <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-6xl shadow-2xl flex flex-col max-h-[90vh]">
-        <div className="px-10 py-7 border-b dark:border-slate-700 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md overflow-y-auto">
+      <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl sm:rounded-6xl shadow-2xl flex flex-col max-h-[90vh] my-auto">
+        <div className="px-6 py-5 sm:px-10 sm:py-7 border-b dark:border-slate-700 flex items-center justify-between shrink-0">
           <div>
-            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100">Upload Photos</h3>
+            <h3 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100">Upload Photos</h3>
             <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase">
               {isAdmin ? 'Staff Mode' : ``}
             </p>

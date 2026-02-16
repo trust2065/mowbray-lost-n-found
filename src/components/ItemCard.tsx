@@ -1,5 +1,5 @@
-import React, { memo } from 'react';
-import { Tag, MapPin, Calendar } from 'lucide-react';
+import React, { memo, useState } from 'react';
+import { Tag, MapPin, Calendar, ImageIcon, ChevronDown, ChevronUp } from 'lucide-react';
 import Gallery from './Gallery';
 import type { Item, ViewMode } from '../types';
 
@@ -10,25 +10,43 @@ interface ItemCardProps {
 }
 
 const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, onPhotoClick }) => {
+  const [showMobileImage, setShowMobileImage] = useState(false);
+
   return (
     <div className={
       viewMode === 'grid'
         ? "bg-white dark:bg-slate-800 rounded-4xl overflow-hidden border dark:border-slate-700 hover:shadow-2xl transition-all"
-        : "bg-white dark:bg-slate-800 p-5 rounded-4xl border dark:border-slate-700 flex items-center gap-6"
+        : "bg-white dark:bg-slate-800 p-3 sm:p-5 rounded-4xl border dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6"
     }>
       <div className={
         viewMode === 'grid'
-          ? "aspect-4/5 bg-slate-100 dark:bg-slate-900"
-          : "w-28 h-28 shrink-0 rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900"
+          ? "aspect-[4/5] bg-slate-100 dark:bg-slate-900"
+          : `${showMobileImage ? 'block' : 'hidden'} sm:block w-full h-48 sm:w-28 sm:h-28 shrink-0 rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900`
       }>
         <Gallery urls={item.imageUrls} onPhotoClick={(index) => onPhotoClick(item.imageUrls, index)} />
       </div>
-      <div className={viewMode === 'grid' ? "p-6" : "flex-1"}>
-        <div className="flex items-center gap-2 mb-2">
-          <Tag className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span className="text-base font-black text-slate-800 dark:text-slate-100 truncate">
-            {item.nameTag || 'Unknown'}
-          </span>
+      <div className={viewMode === 'grid' ? "p-4 sm:p-6" : "flex-1 min-w-0 w-full"}>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-start gap-2 overflow-hidden">
+            <Tag className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-1" />
+            <span className="text-sm sm:text-base font-black text-slate-800 dark:text-slate-100 line-clamp-2 leading-tight">
+              {item.nameTag || 'Unknown'}
+            </span>
+          </div>
+
+          {/* Mobile Image Toggle Button (List Mode Only) */}
+          {viewMode === 'list' && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setShowMobileImage(!showMobileImage);
+              }}
+              className="sm:hidden p-1.5 bg-slate-100 dark:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 active:scale-95 transition-transform"
+              aria-label={showMobileImage ? "Hide photo" : "Show photo"}
+            >
+              {showMobileImage ? <ChevronUp className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
+            </button>
+          )}
         </div>
         <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-lg uppercase inline-block mb-3">
           {item.category}

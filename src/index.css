@@ -3,6 +3,7 @@
 @theme {
   --color-brand-navy: #002664;
   --color-brand-green: #008542;
+  --breakpoint-xs: 29.5rem;
 }
 
 @layer base {
