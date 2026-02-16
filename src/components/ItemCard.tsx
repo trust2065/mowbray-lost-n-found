@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Tag, MapPin, Calendar, ImageIcon, ChevronDown, ChevronUp } from 'lucide-react';
+import { Tag, MapPin, Calendar, ImageIcon, ChevronUp } from 'lucide-react';
 import Gallery from './Gallery';
 import type { Item, ViewMode } from '../types';
 
@@ -20,7 +20,7 @@ const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, onPhotoClick }
     }>
       <div className={
         viewMode === 'grid'
-          ? "aspect-[4/5] bg-slate-100 dark:bg-slate-900"
+          ? "aspect-4/5 bg-slate-100 dark:bg-slate-900"
           : `${showMobileImage ? 'block' : 'hidden'} sm:block w-full h-48 sm:w-28 sm:h-28 shrink-0 rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900`
       }>
         <Gallery urls={item.imageUrls} onPhotoClick={(index) => onPhotoClick(item.imageUrls, index)} />
