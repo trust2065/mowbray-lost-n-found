@@ -55,6 +55,8 @@ const App: React.FC = () => {
     index: 0
   });
 
+  const [showPrivacyModal, setShowPrivacyModal] = useState<boolean>(false);
+
   const { autoFillItem, cancelAiFill, cleanup } = useGeminiAPI();
   const {
     handleFileSelect,
@@ -151,7 +153,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       <Header
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -254,6 +256,86 @@ const App: React.FC = () => {
       />
 
       <SuccessToast show={showSuccessToast} />
+
+      <footer className="bg-slate-800 text-slate-300 text-xs py-8">
+        <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Left - About */}
+          <div className="text-center md:text-left">
+            <h3 className="font-bold text-sm mb-3 text-slate-100">About</h3>
+            <p className="mb-2">Mowbray Public Lost & Found</p>
+            <p>Helping items find their way home.</p>
+          </div>
+
+          {/* Middle - Contact */}
+          <div className="text-center">
+            <h3 className="font-bold text-sm mb-3 text-slate-100">Contact</h3>
+            <p className="mb-2">Email: <a href="mailto:chocous8@gmail.com" className="hover:text-slate-100 underline">chocous8@gmail.com</a></p>
+            <p>Location: Lane Cove, NSW</p>
+          </div>
+
+          {/* Right - Legal */}
+          <div className="text-center md:text-right">
+            <h3 className="font-bold text-sm mb-3 text-slate-100">Legal</h3>
+            <p className="mb-2">© 2026 Choco Li. All rights reserved.</p>
+            <p><button onClick={() => setShowPrivacyModal(true)} className="hover:text-slate-100 underline">[Privacy Policy]</button></p>
+          </div>
+        </div>
+      </footer>
+
+      {/* Privacy Policy Modal */}
+      {showPrivacyModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">Privacy Policy</h2>
+              <button
+                onClick={() => setShowPrivacyModal(false)}
+                className="text-slate-500 hover:text-slate-700 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-6 text-sm">
+              <section>
+                <h3 className="text-lg font-bold mb-3">1. Data Collection & Usage</h3>
+                <p className="mb-3">
+                  This website is designed solely to facilitate the return of lost items within the Mowbray Public School community. We only collect or display:
+                </p>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>Photographs of lost items.</li>
+                  <li>Descriptions of items (e.g., color, brand).</li>
+                  <li>Contact information provided by users reporting or claiming items.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold mb-3">2. Photo Privacy</h3>
+                <p className="mb-3">
+                  To protect student privacy, we strictly adhere to the following:
+                </p>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li><strong>No Faces:</strong> Photographs must only show the lost objects. Please ensure no students' faces are visible in the background.</li>
+                  <li><strong>No Personal IDs:</strong> We avoid displaying sensitive personal information (like full names on tags) unless necessary for identification.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold mb-3">3. Third-Party Sharing</h3>
+                <p>
+                  We do not sell or share any data with third-party advertisers. All information stays within the context of the school's lost and found process.
+                </p>
+              </section>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-slate-200">
+              <p className="text-xs text-slate-500">
+                Last updated: February 2026
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
