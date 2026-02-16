@@ -4,6 +4,7 @@
 export interface Item {
   id: string;
   imageUrls: string[];
+  blurhashes?: string[];
   nameTag: string;
   category: string;
   description: string;

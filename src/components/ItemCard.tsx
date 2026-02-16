@@ -1,5 +1,6 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { MapPin, Calendar } from 'lucide-react';
+import { Blurhash } from 'react-blurhash';
 import Gallery from './Gallery';
 import type { Item, ViewMode } from '../types';
 
@@ -10,6 +11,17 @@ interface ItemCardProps {
 }
 
 const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, onPhotoClick }) => {
+  const [imgLoaded, setImgLoaded] = useState(false);
+
+  // Reset loaded state if image changes (unlikely for existing item but good practice)
+  React.useEffect(() => {
+    if (viewMode === 'list') {
+       const img = new Image();
+       img.src = item.imageUrls[0];
+       if (img.complete) setImgLoaded(true);
+    }
+  }, [item.imageUrls, viewMode]);
+
   return (
     <div className={
       viewMode === 'grid'
@@ -24,14 +36,33 @@ const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, onPhotoClick }
       }>
          {/* Use Gallery for Grid view to allow swiping, simple img for compact List view */}
          {viewMode === 'grid' ? (
-          <Gallery urls={item.imageUrls} onPhotoClick={(index) => onPhotoClick(item.imageUrls, index)} />
-        ) : (
-          <img 
-            src={item.imageUrls[0]} 
-            alt={item.nameTag}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            onClick={() => onPhotoClick(item.imageUrls, 0)}
+          <Gallery 
+            urls={item.imageUrls} 
+            blurhashes={item.blurhashes}
+            onPhotoClick={(index) => onPhotoClick(item.imageUrls, index)} 
           />
+        ) : (
+          <>
+            {item.blurhashes?.[0] && !imgLoaded && (
+               <div className="absolute inset-0 z-10">
+                 <Blurhash
+                   hash={item.blurhashes[0]}
+                   width="100%"
+                   height="100%"
+                   resolutionX={32}
+                   resolutionY={32}
+                   punch={1}
+                 />
+               </div>
+            )}
+            <img 
+              src={item.imageUrls[0]} 
+              alt={item.nameTag}
+              className={`w-full h-full object-cover transition-opacity duration-500 group-hover:scale-110 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+              onClick={() => onPhotoClick(item.imageUrls, 0)}
+              onLoad={() => setImgLoaded(true)}
+            />
+          </>
         )}
       </div>
 

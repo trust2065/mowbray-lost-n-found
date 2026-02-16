@@ -4,6 +4,7 @@ import { CATEGORIES, LOCATIONS } from '../constants';
 import type { PendingItem } from '../types';
 import { validateNameTag } from '../hooks/useFileUpload';
 import { compressImage, needsCompression, formatFileSize, isFileTooLarge } from '../utils/imageCompression';
+import { encodeImageToBlurhash } from '../utils/blurhash';
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -133,8 +134,16 @@ const UploadModal: React.FC<UploadModalProps> = ({
             });
           }
 
+          let blurhash = '';
+          try {
+            blurhash = await encodeImageToBlurhash(imageDataUrl);
+          } catch (e) {
+            console.error('Failed to generate blurhash', e);
+          }
+
           // Add the new image to the item
           onUpdatePendingField(index, 'imageUrls', [...item.imageUrls, imageDataUrl]);
+          onUpdatePendingField(index, 'blurhashes', [...(item.blurhashes || []), blurhash]);
         } catch (error) {
           console.error('Failed to process image:', file.name, error);
           alert(`Failed to process ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);

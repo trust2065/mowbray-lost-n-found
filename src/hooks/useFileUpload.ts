@@ -3,6 +3,7 @@ import type { PendingItem, Item } from '../types';
 import { uploadMultipleImages } from '../services/storage';
 import { addItem } from '../services/firestore';
 import { compressImage, needsCompression, formatFileSize, isFileTooLarge } from '../utils/imageCompression';
+import { encodeImageToBlurhash } from '../utils/blurhash';
 
 // Validation helper for name tags
 export const validateNameTag = (nameTag: string): { isValid: boolean; message?: string; } => {
@@ -90,10 +91,18 @@ export const useFileUpload = (
             });
           }
 
+          let blurhash = '';
+          try {
+            blurhash = await encodeImageToBlurhash(imageDataUrl);
+          } catch (e) {
+            console.error('Failed to generate blurhash', e);
+          }
+
           // Add to pending items
           setPendingItems(prev => [...prev, {
             id: Math.random().toString(36).substring(2, 11),
             imageUrls: [imageDataUrl],
+            blurhashes: [blurhash],
             nameTag: '',
             category: lastUsedCategory,
             description: '',
@@ -175,6 +184,7 @@ export const useFileUpload = (
       const optimisticItems: Item[] = pendingItems.map((pendingItem, index) => ({
         id: `optimistic-${pendingItem.id}`,
         imageUrls: pendingItem.imageUrls,
+        blurhashes: pendingItem.blurhashes,
         nameTag: pendingItem.nameTag,
         category: pendingItem.category,
         description: pendingItem.description,
@@ -214,6 +224,7 @@ export const useFileUpload = (
           // Create item for Firestore
           const itemData: Omit<Item, 'id'> = {
             imageUrls,
+            blurhashes: pendingItem.blurhashes,
             nameTag: pendingItem.nameTag,
             category: pendingItem.category,
             description: pendingItem.description,

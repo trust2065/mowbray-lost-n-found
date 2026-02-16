@@ -102,6 +102,28 @@ server/
 - **Input Validation**: All user inputs are validated and sanitized
 - **Error Handling**: Comprehensive error handling prevents information leakage
 
+## Blurhash Migration
+
+To generate blurhashes for existing images (those uploaded before the feature was added):
+
+1. **Configure CORS**:
+   Ensure your Firebase Storage bucket allows cross-origin requests so the client can read the image data.
+   
+   Run this command in your terminal (using the included `cors.json`):
+   ```bash
+   gsutil cors set cors.json gs://<your-bucket-name>
+   ```
+   *Note: You can find your bucket name in your `.env` file under `VITE_FIREBASE_STORAGE_BUCKET`.*
+
+2. **Run the Script**:
+   - Open the application in your browser (e.g., `http://localhost:5173`).
+   - Open the Developer Console (`F12` or `Cmd+Option+J`).
+   - Run the following command:
+     ```javascript
+     await window.migrateBlurhashes()
+     ```
+   - Wait for the success alert.
+
 ## Future Improvements
 
 - [ ] Implement pagination for large datasets

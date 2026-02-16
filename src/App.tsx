@@ -6,6 +6,7 @@ import { useGeminiAPI } from './hooks/useGeminiAPI';
 import { useFileUpload } from './hooks/useFileUpload';
 import { useDarkMode } from './hooks/useDarkMode';
 import { subscribeToItemsSmart, deleteAllItems } from './services/firestore';
+import { migrateBlurhashes } from './utils/migration';
 import Header from './components/Header';
 import CategoryFilter from './components/CategoryFilter';
 import ItemCard from './components/ItemCard';
@@ -13,6 +14,12 @@ import StaffLoginModal from './components/StaffLoginModal';
 import UploadModal from './components/UploadModal';
 import SuccessToast from './components/SuccessToast';
 import PhotoViewer from './components/PhotoViewer';
+
+declare global {
+  interface Window {
+    migrateBlurhashes: () => Promise<void>;
+  }
+}
 
 const App: React.FC = () => {
   // --- State Management ---
@@ -79,6 +86,9 @@ const App: React.FC = () => {
 
   // --- Cleanup on component unmount ---
   useEffect(() => {
+    // Expose migration tool
+    window.migrateBlurhashes = migrateBlurhashes;
+
     return () => {
       // Cleanup all abort controllers
       abortControllers.current.forEach(controller => controller.abort());
