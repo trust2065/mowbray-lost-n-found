@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, LayoutGrid, List, ShieldCheck, Sun, Moon } from 'lucide-react';
 import type { ViewMode } from '../types';
 
@@ -25,6 +25,26 @@ const Header: React.FC<HeaderProps> = ({
   isDarkMode,
   toggleDarkMode
 }) => {
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY < lastScrollY.current || currentScrollY < 50) {
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setIsVisible(false);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // 參考學校官網配色：
   // 深藍色 (Navy): #002664 (接近 Tailwind 的 blue-950)
   // 綠色 (Green): #008542 (接近 Tailwind 的 emerald-700)
@@ -34,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({
   // However, sticky header usually stays consistent. Let's keep the brand colors as they are robust.
 
   return (
-    <header className="sticky top-0 z-50 bg-blue-900 text-white px-4 py-4 shadow-xl border-b-4 border-[#008542] dark:border-emerald-600">
+    <header className={`sticky top-0 z-50 bg-blue-900 text-white px-4 py-4 shadow-xl border-b-4 border-brand-green dark:border-emerald-600 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="max-w-6xl mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
         {/* Logo 與 標題區 */}
