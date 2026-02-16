@@ -166,9 +166,9 @@ const App: React.FC = () => {
 
       <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
         {isAdmin && (
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-100 rounded-3xl flex items-center justify-between">
-            <div className="flex items-center gap-3 text-amber-800">
-              <ShieldCheck className="w-5 h-5 text-amber-600" />
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-3xl flex items-center justify-between">
+            <div className="flex items-center gap-3 text-blue-800">
+              <ShieldCheck className="w-5 h-5 text-blue-600" />
               <div>
                 <p className="text-sm font-bold uppercase tracking-wide">Staff Mode Enabled</p>
                 <p className="text-[11px] font-medium opacity-70">Full history access active.</p>
@@ -176,7 +176,7 @@ const App: React.FC = () => {
             </div>
             <div className="flex gap-2">
               <button onClick={handleDeleteAllItems} className="text-xs font-bold bg-red-500 text-white px-3 py-2 rounded-xl shadow-sm">Delete All</button>
-              <button onClick={handleAdminLogout} className="text-xs font-bold bg-white text-amber-700 px-4 py-2 rounded-xl shadow-sm">Logout</button>
+              <button onClick={handleAdminLogout} className="text-xs font-bold bg-white text-blue-700 px-4 py-2 rounded-xl shadow-sm">Logout</button>
             </div>
           </div>
         )}
@@ -191,15 +191,15 @@ const App: React.FC = () => {
             <h2 className="text-2xl font-black text-slate-800">{isAdmin ? 'All items' : 'Recent Discoveries'}</h2>
             <p className="text-slate-500 text-sm italic">{isAdmin ? `${filteredItems.length} items` : `Items found in the last 14 days.`}</p>
           </div>
-          <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 bg-slate-900 text-white px-7 py-4 rounded-2xl font-bold shadow-xl active:scale-95 transition-all">
+          <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 bg-blue-900 text-white px-7 py-4 rounded-2xl font-bold shadow-xl active:scale-95 transition-all hover:bg-blue-800">
             <Plus className="w-5 h-5" />
             <span>Post New Item</span>
           </button>
         </div>
 
         {filteredItems.length === 0 ? (
-          <div className="py-32 text-center text-slate-400 border-2 border-dashed rounded-[3rem]">
-            <Search className="w-16 h-16 mx-auto mb-4 opacity-10" />
+          <div className="py-32 text-center text-slate-400 border-2 border-dashed rounded-[3rem] border-blue-200">
+            <Search className="w-16 h-16 mx-auto mb-4 opacity-10 text-blue-400" />
             <p className="text-lg font-bold">No items found.</p>
           </div>
         ) : (
@@ -257,27 +257,27 @@ const App: React.FC = () => {
 
       <SuccessToast show={showSuccessToast} />
 
-      <footer className="bg-slate-800 text-slate-300 text-xs py-8">
+      <footer className="bg-blue-900 text-white text-xs py-8">
         <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Left - About */}
           <div className="text-center md:text-left">
-            <h3 className="font-bold text-sm mb-3 text-slate-100">About</h3>
+            <h3 className="font-bold text-sm mb-3">About</h3>
             <p className="mb-2">Mowbray Public Lost & Found</p>
             <p>Helping items find their way home.</p>
           </div>
 
           {/* Middle - Contact */}
           <div className="text-center">
-            <h3 className="font-bold text-sm mb-3 text-slate-100">Contact</h3>
-            <p className="mb-2">Email: <a href="mailto:chocous8@gmail.com" className="hover:text-slate-100 underline">chocous8@gmail.com</a></p>
+            <h3 className="font-bold text-sm mb-3">Contact</h3>
+            <p className="mb-2">Email: <a href="mailto:chocous8@gmail.com" className="hover:text-blue-200 underline">chocous8@gmail.com</a></p>
             <p>Location: Lane Cove, NSW</p>
           </div>
 
           {/* Right - Legal */}
           <div className="text-center md:text-right">
-            <h3 className="font-bold text-sm mb-3 text-slate-100">Legal</h3>
-            <p className="mb-2">© 2026 Choco Li. All rights reserved.</p>
-            <p><button onClick={() => setShowPrivacyModal(true)} className="hover:text-slate-100 underline">[Privacy Policy]</button></p>
+            <h3 className="font-bold text-sm mb-3">Legal</h3>
+            <p className="mb-2"> 2026 Choco Li. All rights reserved.</p>
+            <p><button onClick={() => setShowPrivacyModal(true)} className="hover:text-blue-200 underline">[Privacy Policy]</button></p>
           </div>
         </div>
       </footer>
