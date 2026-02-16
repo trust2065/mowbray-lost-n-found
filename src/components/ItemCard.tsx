@@ -42,11 +42,11 @@ const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, onPhotoClick }
           </span>
           <hr className="border-slate-200" />
           <span className="flex items-center gap-2 font-medium">
-            <Calendar className="w-3.5 h-3.5" /> Found {new Date(item.foundDate).toLocaleDateString('en-US', {
+            <Calendar className="w-3.5 h-3.5" /> Found on {new Date(item.foundDate).toLocaleDateString('en-AU', {
               month: 'short',
               day: 'numeric',
               year: 'numeric'
-            })}, {new Date(item.foundDate).toLocaleTimeString('en-US', {
+            })}, {new Date(item.foundDate).toLocaleTimeString('en-AU', {
               hour: 'numeric',
               hour12: true
             })}
