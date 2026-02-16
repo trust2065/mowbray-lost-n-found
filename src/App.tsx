@@ -4,6 +4,7 @@ import { ADMIN_PASSCODE, CATEGORIES, LOCATIONS } from './constants';
 import type { Item, PendingItem, ViewMode } from './types';
 import { useGeminiAPI } from './hooks/useGeminiAPI';
 import { useFileUpload } from './hooks/useFileUpload';
+import { useDarkMode } from './hooks/useDarkMode';
 import { subscribeToItemsSmart, deleteAllItems } from './services/firestore';
 import Header from './components/Header';
 import CategoryFilter from './components/CategoryFilter';
@@ -15,6 +16,7 @@ import PhotoViewer from './components/PhotoViewer';
 
 const App: React.FC = () => {
   // --- State Management ---
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [showPasscodeModal, setShowPasscodeModal] = useState<boolean>(false);
   const [passcodeAttempt, setPasscodeAttempt] = useState<string>('');
@@ -153,7 +155,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans transition-colors duration-200 dark:bg-slate-900 dark:text-slate-100">
       <Header
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -162,21 +164,23 @@ const App: React.FC = () => {
         isAdmin={isAdmin}
         onAdminToggle={() => setIsAdmin(!isAdmin)}
         onTitleDoubleClick={() => setShowPasscodeModal(true)}
+        isDarkMode={isDarkMode}
+        toggleDarkMode={toggleDarkMode}
       />
 
       <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
         {isAdmin && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-3xl flex items-center justify-between">
-            <div className="flex items-center gap-3 text-blue-800">
-              <ShieldCheck className="w-5 h-5 text-blue-600" />
+          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-3xl flex items-center justify-between transition-colors">
+            <div className="flex items-center gap-3 text-blue-800 dark:text-blue-200">
+              <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               <div>
                 <p className="text-sm font-bold uppercase tracking-wide">Staff Mode Enabled</p>
                 <p className="text-[11px] font-medium opacity-70">Full history access active.</p>
               </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={handleDeleteAllItems} className="text-xs font-bold bg-red-500 text-white px-3 py-2 rounded-xl shadow-sm">Delete All</button>
-              <button onClick={handleAdminLogout} className="text-xs font-bold bg-white text-blue-700 px-4 py-2 rounded-xl shadow-sm">Logout</button>
+              <button onClick={handleDeleteAllItems} className="text-xs font-bold bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-xl shadow-sm transition-colors">Delete All</button>
+              <button onClick={handleAdminLogout} className="text-xs font-bold bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Logout</button>
             </div>
           </div>
         )}
@@ -188,18 +192,18 @@ const App: React.FC = () => {
 
         <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-black text-slate-800">{isAdmin ? 'All items' : 'Recent Discoveries'}</h2>
-            <p className="text-slate-500 text-sm italic">{isAdmin ? `${filteredItems.length} items` : `Items found in the last 14 days.`}</p>
+            <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100">{isAdmin ? 'All items' : 'Recent Discoveries'}</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm italic">{isAdmin ? `${filteredItems.length} items` : `Items found in the last 14 days.`}</p>
           </div>
-          <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 bg-blue-900 text-white px-7 py-4 rounded-2xl font-bold shadow-xl active:scale-95 transition-all hover:bg-blue-800">
+          <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 bg-blue-900 text-white px-7 py-4 rounded-2xl font-bold shadow-xl active:scale-95 transition-all hover:bg-blue-800 dark:bg-emerald-600 dark:hover:bg-emerald-500">
             <Plus className="w-5 h-5" />
             <span>Post New Item</span>
           </button>
         </div>
 
         {filteredItems.length === 0 ? (
-          <div className="py-32 text-center text-slate-400 border-2 border-dashed rounded-[3rem] border-blue-200">
-            <Search className="w-16 h-16 mx-auto mb-4 opacity-10 text-blue-400" />
+          <div className="py-32 text-center text-slate-400 dark:text-slate-500 border-2 border-dashed rounded-[3rem] border-blue-200 dark:border-slate-700">
+            <Search className="w-16 h-16 mx-auto mb-4 opacity-10 text-blue-400 dark:text-slate-400" />
             <p className="text-lg font-bold">No items found.</p>
           </div>
         ) : (
@@ -257,7 +261,7 @@ const App: React.FC = () => {
 
       <SuccessToast show={showSuccessToast} />
 
-      <footer className="bg-blue-900 text-white text-xs py-8">
+      <footer className="bg-blue-900 text-white text-xs py-8 transition-colors">
         <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Left - About */}
           <div className="text-center md:text-left">
@@ -277,28 +281,28 @@ const App: React.FC = () => {
           <div className="text-center md:text-right">
             <h3 className="font-bold text-sm mb-3">Legal</h3>
             <p className="mb-2"> 2026 Choco Li. All rights reserved.</p>
-            <p><button onClick={() => setShowPrivacyModal(true)} className="hover:text-blue-200 underline">[Privacy Policy]</button></p>
+            <p><button onClick={() => setShowPrivacyModal(true)} className="hover:text-blue-200 underline">Privacy Policy</button></p>
           </div>
         </div>
       </footer>
 
       {/* Privacy Policy Modal */}
       {showPrivacyModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Privacy Policy</h2>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl transition-colors">
+            <div className="flex justify-between items-center mb-6 border-b dark:border-slate-700 pb-4">
+              <h2 className="text-2xl font-bold dark:text-slate-100">Privacy Policy</h2>
               <button
                 onClick={() => setShowPrivacyModal(false)}
-                className="text-slate-500 hover:text-slate-700 text-2xl font-bold"
+                className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 text-2xl font-bold transition-colors"
               >
                 ×
               </button>
             </div>
 
-            <div className="space-y-6 text-sm">
+            <div className="space-y-6 text-sm dark:text-slate-300">
               <section>
-                <h3 className="text-lg font-bold mb-3">1. Data Collection & Usage</h3>
+                <h3 className="text-lg font-bold mb-3 dark:text-slate-100">1. Data Collection & Usage</h3>
                 <p className="mb-3">
                   This website is designed solely to facilitate the return of lost items within the Mowbray Public School community. We only collect or display:
                 </p>
@@ -310,7 +314,7 @@ const App: React.FC = () => {
               </section>
 
               <section>
-                <h3 className="text-lg font-bold mb-3">2. Photo Privacy</h3>
+                <h3 className="text-lg font-bold mb-3 dark:text-slate-100">2. Photo Privacy</h3>
                 <p className="mb-3">
                   To protect student privacy, we strictly adhere to the following:
                 </p>
@@ -321,15 +325,15 @@ const App: React.FC = () => {
               </section>
 
               <section>
-                <h3 className="text-lg font-bold mb-3">3. Third-Party Sharing</h3>
+                <h3 className="text-lg font-bold mb-3 dark:text-slate-100">3. Third-Party Sharing</h3>
                 <p>
                   We do not sell or share any data with third-party advertisers. All information stays within the context of the school's lost and found process.
                 </p>
               </section>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-slate-200">
-              <p className="text-xs text-slate-500">
+            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Last updated: February 2026
               </p>
             </div>

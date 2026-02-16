@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, LayoutGrid, List, ShieldCheck } from 'lucide-react';
+import { Search, LayoutGrid, List, ShieldCheck, Sun, Moon } from 'lucide-react';
 import type { ViewMode } from '../types';
 
 interface HeaderProps {
@@ -10,6 +10,8 @@ interface HeaderProps {
   onTitleDoubleClick: () => void;
   isAdmin?: boolean;
   onAdminToggle?: () => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -19,14 +21,20 @@ const Header: React.FC<HeaderProps> = ({
   setViewMode,
   onTitleDoubleClick,
   isAdmin = false,
-  onAdminToggle
+  onAdminToggle,
+  isDarkMode,
+  toggleDarkMode
 }) => {
   // 參考學校官網配色：
   // 深藍色 (Navy): #002664 (接近 Tailwind 的 blue-950)
   // 綠色 (Green): #008542 (接近 Tailwind 的 emerald-700)
+  // Dark mode adjustments:
+  // Using slate-900 for dark background, but Header uses specific branding colors.
+  // We can keep the branding colors but maybe slightly darken or adjust for contrast if needed.
+  // However, sticky header usually stays consistent. Let's keep the brand colors as they are robust.
 
   return (
-    <header className="sticky top-0 z-50 bg-[#002664] text-white px-4 py-4 shadow-xl border-b-4 border-[#008542]">
+    <header className="sticky top-0 z-50 bg-blue-900 text-white px-4 py-4 shadow-xl border-b-4 border-[#008542] dark:border-emerald-600">
       <div className="max-w-6xl mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
         {/* Logo 與 標題區 */}
@@ -60,31 +68,42 @@ const Header: React.FC<HeaderProps> = ({
           <div className="relative flex-1">
             {/* 修正搜尋圖示：增加 z-index 並調整顏色對比 */}
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-              <Search className="w-4 h-4 text-[#002664]" />
+              <Search className="w-4 h-4 text-slate-400 dark:text-slate-500" />
             </div>
             <input
               type="text"
-              placeholder="Search for name, description and location" className="w-full pl-10 pr-4 py-2.5 bg-white border-2 border-transparent rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-white outline-none transition-all shadow-inner"
+              placeholder="Search for name, description and location" className="w-full pl-10 pr-4 py-2.5 bg-white border-2 border-transparent rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-white outline-none transition-all shadow-inner dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 dark:border-slate-700"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
-          {/* 視圖切換按鈕 */}
-          <div className="flex bg-blue-950/40 p-1 rounded-xl border border-blue-800">
+          <div className="flex gap-2">
+            {/* View Mode Toggle */}
+            <div className="flex bg-blue-950/40 p-1 rounded-xl border border-blue-800 h-full items-center">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-emerald-600 text-white shadow-md' : 'text-blue-200 hover:bg-blue-800'
+                  }`}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-emerald-600 text-white shadow-md' : 'text-blue-200 hover:bg-blue-800'
+                  }`}
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Dark Mode Toggle */}
             <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-emerald-600 text-white shadow-md' : 'text-blue-200 hover:bg-blue-800'
-                }`}
+              onClick={toggleDarkMode}
+              className="p-2.5 rounded-xl bg-blue-950/40 border border-blue-800 text-blue-200 hover:bg-blue-800 transition-all flex items-center justify-center"
+              aria-label="Toggle Dark Mode"
             >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-emerald-600 text-white shadow-md' : 'text-blue-200 hover:bg-blue-800'
-                }`}
-            >
-              <List className="w-4 h-4" />
+              {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </button>
           </div>
         </div>

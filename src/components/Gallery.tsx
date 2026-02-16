@@ -8,7 +8,7 @@ interface GalleryProps {
 const Gallery: React.FC<GalleryProps> = ({ urls, onPhotoClick }) => {
   const [idx, setIdx] = useState(0);
 
-  if (!urls.length) return <div className="bg-slate-100 w-full h-full" />;
+  if (!urls.length) return <div className="bg-slate-100 dark:bg-slate-800 w-full h-full" />;
 
   return (
     <div

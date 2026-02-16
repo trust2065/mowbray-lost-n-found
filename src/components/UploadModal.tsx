@@ -152,27 +152,27 @@ const UploadModal: React.FC<UploadModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
-      <div className="bg-white w-full max-w-2xl rounded-6xl shadow-2xl flex flex-col max-h-[90vh]">
-        <div className="px-10 py-7 border-b flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-6xl shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="px-10 py-7 border-b dark:border-slate-700 flex items-center justify-between">
           <div>
-            <h3 className="text-2xl font-black text-slate-800">Upload Photos</h3>
-            <p className="text-[10px] text-slate-400 font-bold uppercase">
+            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100">Upload Photos</h3>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase">
               {isAdmin ? 'Staff Mode' : ``}
             </p>
           </div>
           <button onClick={onClose} className="p-2">
-            <X className="w-7 h-7 text-slate-300" />
+            <X className="w-7 h-7 text-slate-300 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-300 transition-colors" />
           </button>
         </div>
 
-        <div className="p-8 overflow-y-auto bg-slate-50/50">
+        <div className="p-8 overflow-y-auto bg-slate-50/50 dark:bg-slate-900/50">
           {pendingItems.length === 0 ? (
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="cursor-pointer border-4 border-dashed rounded-6xl p-20 text-center hover:border-emerald-300"
+              className="cursor-pointer border-4 border-dashed border-slate-200 dark:border-slate-700 rounded-6xl p-20 text-center hover:border-emerald-300 dark:hover:border-emerald-500 transition-colors"
             >
-              <Upload className="w-14 h-14 mx-auto text-slate-200 mb-5" />
-              <p className="text-xl font-black text-slate-700">Select up to 5 photo(s)</p>
+              <Upload className="w-14 h-14 mx-auto text-slate-200 dark:text-slate-600 mb-5" />
+              <p className="text-xl font-black text-slate-700 dark:text-slate-300">Select up to 5 photo(s)</p>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -185,12 +185,12 @@ const UploadModal: React.FC<UploadModalProps> = ({
           ) : (
             <div className="space-y-10">
               {pendingItems.map((item, index) => (
-                <div key={item.id} className="bg-white p-7 rounded-4xl shadow-xl flex flex-col sm:flex-row gap-8 relative">
+                <div key={item.id} className="bg-white dark:bg-slate-800 p-7 rounded-4xl shadow-xl flex flex-col sm:flex-row gap-8 relative border border-slate-100 dark:border-slate-700">
                   <div className="w-full sm:w-36 shrink-0 flex flex-col gap-4">
-                    <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                    <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-wider">
                       Item {index + 1}
                     </div>
-                    <div className="relative aspect-square rounded-4xl overflow-hidden bg-slate-100">
+                    <div className="relative aspect-square rounded-4xl overflow-hidden bg-slate-100 dark:bg-slate-900">
                       <img
                         src={item.imageUrls[item.activePreviewIdx]}
                         className="w-full h-full object-cover"
@@ -198,7 +198,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                       />
                     </div>
                     {item.imageUrls.length > 1 && (
-                      <div className="flex items-center justify-end gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      <div className="flex items-center justify-end gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                         <span>{item.imageUrls.length}/{isAdmin ? 10 : 3}</span>
                         <span className="opacity-40">(max {isAdmin ? 10 : 3})</span>
                       </div>
@@ -208,16 +208,16 @@ const UploadModal: React.FC<UploadModalProps> = ({
                         <div
                           key={i}
                           onClick={() => onUpdatePendingField(index, 'activePreviewIdx', i)}
-                          className={`w-10 h-10 shrink-0 cursor-pointer rounded-lg border-2 ${item.activePreviewIdx === i ? 'border-emerald-500' : 'border-transparent'
+                          className={`w-10 h-10 shrink-0 cursor-pointer rounded-lg border-2 overflow-hidden ${item.activePreviewIdx === i ? 'border-emerald-500' : 'border-transparent'
                             }`}
                         >
-                          <img src={img} className="w-full h-full object-cover rounded-md" alt="thumb" />
+                          <img src={img} className="w-full h-full object-cover" alt="thumb" />
                         </div>
                       ))}
                       {item.imageUrls.length < (isAdmin ? 10 : 3) && (
                         <button
                           onClick={() => handleAddMorePhotos(item, index)}
-                          className="w-10 h-10 border-2 border-dashed rounded-lg flex items-center justify-center text-slate-300"
+                          className="w-10 h-10 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg flex items-center justify-center text-slate-300 dark:text-slate-500 hover:border-emerald-500 hover:text-emerald-500 transition-colors"
                         >
                           +
                         </button>
@@ -231,7 +231,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                         <input
                           type="text"
                           placeholder="Name on item"
-                          className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-black text-slate-700"
+                          className="w-full bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-black text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
                           value={item.nameTag}
                           onChange={(e) => onUpdatePendingField(index, 'nameTag', e.target.value)}
                         />
@@ -245,14 +245,14 @@ const UploadModal: React.FC<UploadModalProps> = ({
                         <button
                           onClick={() => onAutoFillItem(index)}
                           disabled={item.isAnalyzing}
-                          className="bg-emerald-50 text-emerald-600 px-4 py-3 rounded-2xl text-[11px] font-black flex items-center gap-2 shadow-sm"
+                          className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-4 py-3 rounded-2xl text-[11px] font-black flex items-center gap-2 shadow-sm whitespace-nowrap hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
                         >
                           {item.isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} AI Fill
                         </button>
                       )}
                       <button
                         onClick={() => onRemovePendingItem(item.id)}
-                        className="bg-rose-50 text-rose-500 p-3 rounded-2xl hover:bg-rose-100 transition-colors shrink-0"
+                        className="bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 p-3 rounded-2xl hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors shrink-0"
                         title="Remove item"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -266,14 +266,14 @@ const UploadModal: React.FC<UploadModalProps> = ({
                     )}
                     <div className="grid grid-cols-2 gap-4">
                       <select
-                        className="bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600"
+                        className="bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer transition-all"
                         value={item.category}
                         onChange={(e) => onUpdatePendingField(index, 'category', e.target.value)}
                       >
                         {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                       <select
-                        className="bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600"
+                        className="bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer transition-all"
                         value={item.location}
                         onChange={(e) => onUpdatePendingField(index, 'location', e.target.value)}
                       >
@@ -282,7 +282,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                     </div>
                     <textarea
                       placeholder="Description..."
-                      className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm min-h-17.5"
+                      className="w-full bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-5 py-3 text-sm min-h-17.5 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-all resize-none"
                       value={item.description}
                       onChange={(e) => onUpdatePendingField(index, 'description', e.target.value)}
                     />
@@ -292,7 +292,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
               <button
                 onClick={handleAddAnotherItem}
                 disabled={!isAdmin && pendingItems.length >= 5}
-                className="w-full py-5 border-2 border-dashed rounded-4xl text-slate-400 font-black text-sm hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-5 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-4xl text-slate-400 dark:text-slate-500 font-black text-sm hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 + Add More Photos
               </button>
@@ -309,9 +309,9 @@ const UploadModal: React.FC<UploadModalProps> = ({
         </div>
 
         {pendingItems.length > 0 && (
-          <div className="p-8 border-t flex items-center gap-5">
-            <button onClick={onClose} className="flex-1 py-4 text-slate-400 font-bold">Cancel</button>
-            <button onClick={onConfirmUpload} className="flex-2 py-4.5 bg-emerald-600 text-white font-black rounded-3xl shadow-2xl active:scale-95 transition-all">
+          <div className="p-8 border-t dark:border-slate-700 flex items-center gap-5">
+            <button onClick={onClose} className="flex-1 py-4 text-slate-400 dark:text-slate-500 font-bold hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Cancel</button>
+            <button onClick={onConfirmUpload} className="flex-2 py-4.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-3xl shadow-2xl hover:shadow-emerald-500/20 active:scale-95 transition-all">
               Post {pendingItems.length} Item(s)
             </button>
           </div>
