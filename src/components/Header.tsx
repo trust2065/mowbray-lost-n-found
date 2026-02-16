@@ -36,7 +36,7 @@ const Header: React.FC<HeaderProps> = ({
           </h1>
 
           {/* Admin Toggle for Development */}
-          {onAdminToggle && (isAdmin || import.meta.env.DEV) && (
+          {onAdminToggle && (isAdmin || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) && (
             <button
               onClick={onAdminToggle}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${isAdmin
