@@ -239,6 +239,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                       <div className="flex-1 relative">
                         <input
                           type="text"
+                          id={`name-input-${index}`}
                           placeholder="Name on item"
                           className="w-full bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-black text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                           value={item.nameTag}
@@ -277,6 +278,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-slate-400 dark:text-slate-500 ml-2 uppercase">Category</label>
                         <select
+                          id={`category-select-${index}`}
                           className="w-full bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-all appearance-none"
                           value={item.category}
                           onChange={(e) => onUpdatePendingField(index, 'category', e.target.value)}
@@ -296,6 +298,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                       </div>
                     </div>
                     <textarea
+                      id={`description-input-${index}`}
                       placeholder="Description..."
                       className="w-full bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-5 py-3 text-sm min-h-17.5 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
                       value={item.description}

@@ -69,16 +69,16 @@ test.describe('AI Auto Fill Feature', () => {
     await autoFillBtn.click();
 
     // 7. Verify fields are filled
-    // Using placeholders to locate inputs based on previous context
-    const nameInput = page.locator('input[placeholder="Name on item"], input[placeholder="e.g. Oliver Smith"]');
-    const descriptionInput = page.locator('textarea[placeholder="Description..."] , textarea[placeholder="e.g. Nike blue jumper size 10"]');
+    // Using IDs to locate inputs based on index
+    const nameInput = page.locator('#name-input-0');
+    const descriptionInput = page.locator('#description-input-0');
 
     // Wait for the values to be populated
     await expect(nameInput).toHaveValue('Peter Parker', { timeout: 10000 });
     await expect(descriptionInput).toHaveValue('Red and blue spandex suit');
 
     // Verify Category selection
-    const categorySelect = page.locator('select').first();
+    const categorySelect = page.locator('#category-select-0');
     await expect(categorySelect).toHaveValue('School Hat');
   });
 });
