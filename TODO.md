@@ -23,7 +23,7 @@
 - [x] Remove the guest mode wording
 - [x] Specify what can be searched in search functionality
 - [ ] Zustand Store
-- [ ] Make AI refill work again in dev/prod (when goes to prod, i move the folder to /api and change the endpoint from localhost to /api)
+- [x] Make AI refill work again in dev/prod (when goes to prod, i move the folder to /api and change the endpoint from localhost to /api)
 
 ## Before release
 - [ ] Refine rule for storage bucket and firestore
