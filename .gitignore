@@ -33,7 +33,9 @@ dist-ssr
 # Test reports
 test-results/
 test-report-*.md
+playwright-report/
 
 
 .vercel
 .env*.local
+
