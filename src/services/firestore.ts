@@ -14,6 +14,22 @@ import {
 import { db } from '../firebase/config';
 import type { Item } from '../types';
 
+// Client-side types for internal testing and error handling
+export interface SimpleTestItem {
+  id: string;
+  title?: string;
+  message?: string;
+  timestamp?: string;
+  [key: string]: unknown;
+}
+
+export interface FirestoreError {
+  name: string;
+  message: string;
+  code?: string;
+  stack?: string;
+}
+
 const ITEMS_COLLECTION = 'lost-items';
 
 export const addItem = async (item: Omit<Item, 'id'>): Promise<string> => {
@@ -110,7 +126,7 @@ export const addSimpleTestItem = async () => {
 };
 
 // Read simple test items with timeout
-export const getSimpleTestItems = async (): Promise<any[]> => {
+export const getSimpleTestItems = async (): Promise<SimpleTestItem[]> => {
   try {
     console.log('Reading simple test items...');
 
@@ -131,7 +147,7 @@ export const getSimpleTestItems = async (): Promise<any[]> => {
     };
 
     const items = await Promise.race([operationPromise(), timeoutPromise]);
-    return items as any[];
+    return items as SimpleTestItem[];
   } catch (error) {
     console.error('Failed to read simple test items:', error);
     return [];
@@ -175,11 +191,12 @@ export const testFirestoreConnection = async (): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Firestore connectivity test failed:', error);
-    if (error instanceof Error) {
+    const fsError = error as FirestoreError;
+    if (fsError) {
       console.error('Connection error details:', {
-        name: error.name,
-        message: error.message,
-        code: (error as any).code
+        name: fsError.name,
+        message: fsError.message,
+        code: fsError.code
       });
     }
     return false;
@@ -202,11 +219,12 @@ export const checkItemsCount = async (): Promise<number> => {
     return querySnapshot.docs.length;
   } catch (error) {
     console.error('Error checking items count:', error);
-    if (error instanceof Error) {
+    const fsError = error as FirestoreError;
+    if (fsError) {
       console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        code: (error as any).code
+        name: fsError.name,
+        message: fsError.message,
+        code: fsError.code
       });
     }
     return 0;
