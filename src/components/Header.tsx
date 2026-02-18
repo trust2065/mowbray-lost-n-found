@@ -7,7 +7,7 @@ interface HeaderProps {
   setSearchQuery: (query: string) => void;
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
-  onTitleDoubleClick: () => void;
+  onTitleDoubleClick?: () => void;
   isAdmin?: boolean;
   onAdminToggle?: () => void;
   isDarkMode: boolean;
@@ -60,7 +60,7 @@ const Header: React.FC<HeaderProps> = ({
         {/* Logo 與 標題區 */}
         <div className="flex items-center justify-between w-full sm:w-auto">
           <div className="flex items-center gap-4">
-            <div className="cursor-pointer" onDoubleClick={onTitleDoubleClick}>
+            <div className={onTitleDoubleClick ? 'cursor-pointer' : undefined} onDoubleClick={onTitleDoubleClick}>
               <h1 className="text-xl font-bold tracking-tight leading-none">
                 Mowbray Public
                 <span className="text-[11px] uppercase tracking-[0.2em] text-emerald-400 font-extrabold block mt-1">

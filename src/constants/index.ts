@@ -10,7 +10,11 @@ export const getEnvVar = (key: keyof ImportMetaEnv, fallback: string): string =>
 
 export const API_KEY: string = ''; // Removed - now handled by server proxy
 export const MODEL_NAME: string = "gemini-2.5-flash-preview-09-2025";
-export const ADMIN_PASSCODE: string = getEnvVar('VITE_ADMIN_PASSCODE', '9402');
+export const ADMIN_PASSCODE: string = getEnvVar('VITE_ADMIN_PASSCODE', '');
+
+if (!ADMIN_PASSCODE && import.meta.env.PROD) {
+  console.warn('Security Warning: VITE_ADMIN_PASSCODE is not set.');
+}
 
 export const CATEGORIES: readonly string[] = ["School Hat", "Water Bottle", "Lunch Box"] as const;
 export const LOCATIONS: readonly string[] = [

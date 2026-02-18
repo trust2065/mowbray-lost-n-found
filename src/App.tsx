@@ -195,7 +195,7 @@ const App: React.FC = () => {
         setViewMode={setViewMode}
         isAdmin={isAdmin}
         onAdminToggle={() => setIsAdmin(!isAdmin)}
-        onTitleDoubleClick={() => setShowPasscodeModal(true)}
+        onTitleDoubleClick={ADMIN_PASSCODE ? () => setShowPasscodeModal(true) : undefined}
         isDarkMode={isDarkMode}
         toggleDarkMode={toggleDarkMode}
       />

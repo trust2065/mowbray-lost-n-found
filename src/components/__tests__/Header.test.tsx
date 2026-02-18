@@ -74,5 +74,11 @@ describe('Header', () => {
       throw new Error('Title element not found');
     }
   });
+
+  it('does not show cursor-pointer when onTitleDoubleClick is missing', () => {
+    render(<Header {...defaultProps} onTitleDoubleClick={undefined} />);
+    const titleParent = screen.getByText(/Mowbray Public/i).closest('.cursor-pointer');
+    expect(titleParent).not.toBeInTheDocument();
+  });
 });
 
