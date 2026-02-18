@@ -10,6 +10,7 @@ export interface Item {
   description: string;
   foundDate: string;
   location: string;
+  isDeleted?: boolean;
 }
 
 /**

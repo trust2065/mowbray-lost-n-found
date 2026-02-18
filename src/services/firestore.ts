@@ -225,7 +225,7 @@ export const subscribeToItems = (callback: (items: Item[]) => void) => {
           ...data,
           foundDate: data.foundDate.toDate().toISOString()
         } as Item;
-      });
+      }).filter(item => !item.isDeleted);
       callback(items);
     },
     (error) => {
@@ -251,14 +251,16 @@ export const subscribeToItemsSmart = (
         return;
       }
 
-      const items = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          foundDate: data.foundDate.toDate().toISOString()
-        } as Item;
-      });
+      const items = querySnapshot.docs
+        .map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            foundDate: data.foundDate.toDate().toISOString()
+          } as Item;
+        })
+        .filter(item => !item.isDeleted); // Client-side filtering to avoid index requirements
 
       callback(items);
     },
@@ -281,6 +283,8 @@ export const deleteAllItems = async (): Promise<void> => {
     // Collect all image URLs from all items
     const allImageUrls: string[] = [];
     querySnapshot.docs.forEach(doc => {
+      // Only check imageUrls for items that aren't already deleted, or maybe delete regardless? 
+      // The original code deleted EVERYTHING. Let's keep it deleting everything including soft-deleted ones for a full wipe.
       const data = doc.data();
       if (data.imageUrls && Array.isArray(data.imageUrls)) {
         allImageUrls.push(...data.imageUrls);
@@ -310,7 +314,8 @@ export const deleteAllItems = async (): Promise<void> => {
 };
 
 export const deleteItem = async (itemId: string): Promise<void> => {
-  await deleteDoc(doc(db, ITEMS_COLLECTION, itemId));
+  const docRef = doc(db, ITEMS_COLLECTION, itemId);
+  await updateDoc(docRef, { isDeleted: true });
 };
 
 export const updateItem = async (itemId: string, updates: Partial<Item>): Promise<void> => {

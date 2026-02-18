@@ -5,7 +5,7 @@ import type { Item, PendingItem, ViewMode } from './types';
 import { useGeminiAPI } from './hooks/useGeminiAPI';
 import { useFileUpload } from './hooks/useFileUpload';
 import { useDarkMode } from './hooks/useDarkMode';
-import { subscribeToItemsSmart, deleteAllItems } from './services/firestore';
+import { subscribeToItemsSmart, deleteAllItems, deleteItem } from './services/firestore';
 import { migrateBlurhashes } from './utils/migration';
 import Header from './components/Header';
 import CategoryFilter from './components/CategoryFilter';
@@ -83,6 +83,15 @@ const App: React.FC = () => {
     setLastUsedLocation,
     optimisticIds
   );
+
+  const handleDelete = useCallback(async (id: string) => {
+    try {
+      await deleteItem(id);
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      alert('Failed to delete item.');
+    }
+  }, []);
 
   // --- Cleanup on component unmount ---
   useEffect(() => {
@@ -234,6 +243,8 @@ const App: React.FC = () => {
                   item={item}
                   viewMode={viewMode}
                   onPhotoClick={handlePhotoClick}
+                  isAdmin={isAdmin}
+                  onDelete={handleDelete}
                 />
               ))}
             </div>
