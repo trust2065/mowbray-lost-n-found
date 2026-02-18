@@ -3,12 +3,26 @@ import { encode } from 'blurhash';
 const loadImage = (src: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'Anonymous';
+
+    // Only apply crossOrigin and cache buster to remote HTTP/HTTPS URLs
+    const isBase64 = src.startsWith('data:');
+    const isBlob = src.startsWith('blob:');
+
+    if (!isBase64 && !isBlob) {
+      img.crossOrigin = 'Anonymous';
+      // Append a cache buster to force a fresh request for remote images
+      const sep = src.includes('?') ? '&' : '?';
+      img.src = `${src}${sep}c=${Date.now()}`;
+    } else {
+      // For base64 or blob URLs, use as is
+      img.src = src;
+    }
+
     img.onload = () => resolve(img);
-    img.onerror = (...args) => reject(args);
-    // Append a cache buster implementation to force a fresh request
-    const sep = src.includes('?') ? '&' : '?';
-    img.src = `${src}${sep}c=${Date.now()}`;
+    img.onerror = (e) => {
+      console.error('Failed to load image for blurhash:', { src: src.substring(0, 50) + '...', error: e });
+      reject(e);
+    };
   });
 
 const getImageData = (image: HTMLImageElement): ImageData => {

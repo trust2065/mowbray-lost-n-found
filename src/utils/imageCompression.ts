@@ -87,7 +87,10 @@ export const compressImage = (
             canvas.toBlob(
               (blob) => {
                 if (blob) {
-                  resolve(URL.createObjectURL(blob));
+                  const reader = new FileReader();
+                  reader.onloadend = () => resolve(reader.result as string);
+                  reader.onerror = () => resolve('');
+                  reader.readAsDataURL(blob);
                 } else {
                   resolve('');
                 }
