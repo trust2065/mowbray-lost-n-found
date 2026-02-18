@@ -101,12 +101,14 @@ const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-200'}`}
+                aria-label="Grid View"
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
                 className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-200'}`}
+                aria-label="List View"
               >
                 <List className="w-3.5 h-3.5" />
               </button>
@@ -114,6 +116,7 @@ const Header: React.FC<HeaderProps> = ({
             <button
               onClick={toggleDarkMode}
               className="p-2 rounded-xl bg-blue-950/40 border border-blue-800 text-blue-200 transition-all"
+              aria-label="Toggle Dark Mode"
             >
               {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </button>
@@ -143,6 +146,7 @@ const Header: React.FC<HeaderProps> = ({
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-emerald-600 text-white shadow-md' : 'text-blue-200 hover:bg-blue-800'
                   }`}
+                aria-label="Grid View"
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
@@ -150,6 +154,7 @@ const Header: React.FC<HeaderProps> = ({
                 onClick={() => setViewMode('list')}
                 className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-emerald-600 text-white shadow-md' : 'text-blue-200 hover:bg-blue-800'
                   }`}
+                aria-label="List View"
               >
                 <List className="w-4 h-4" />
               </button>
