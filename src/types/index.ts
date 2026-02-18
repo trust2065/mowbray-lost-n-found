@@ -1,3 +1,8 @@
+import { CATEGORIES, LOCATIONS } from '../constants';
+
+export type Category = (typeof CATEGORIES)[number];
+export type Location = (typeof LOCATIONS)[number];
+
 /**
  * 代表已存檔的遺失物資料結構
  */
@@ -6,10 +11,10 @@ export interface Item {
   imageUrls: string[];
   blurhashes?: string[];
   nameTag: string;
-  category: string;
+  category: Category;
   description: string;
   foundDate: string;
-  location: string;
+  location: Location;
   isDeleted?: boolean;
 }
 
@@ -27,7 +32,7 @@ export interface PendingItem extends Omit<Item, 'foundDate'> {
  */
 export interface GeminiAnalysis {
   nameTag: string;
-  category: string;
+  category: Category;
   description: string;
 }
 
