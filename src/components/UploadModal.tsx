@@ -31,10 +31,10 @@ const UploadModal: React.FC<UploadModalProps> = ({
   onConfirmUpload,
   fileInputRef
 }) => {
-  if (!isOpen) return null;
-
   // Create a separate ref for the "add another item" button
   const addItemInputRef = React.useRef<HTMLInputElement>(null);
+
+  if (!isOpen) return null;
 
   const handleInitialFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = e.target;

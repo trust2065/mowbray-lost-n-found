@@ -1,40 +1,54 @@
+import { z } from 'zod';
 import { CATEGORIES, LOCATIONS } from '../constants';
 
-export type Category = (typeof CATEGORIES)[number];
-export type Location = (typeof LOCATIONS)[number];
+// --- Basic Schemas ---
+
+export const CategorySchema = z.enum(CATEGORIES);
+export const LocationSchema = z.enum(LOCATIONS);
+
+export type Category = z.infer<typeof CategorySchema>;
+export type Location = z.infer<typeof LocationSchema>;
+
+// --- Core Data Schemas ---
 
 /**
- * 代表已存檔的遺失物資料結構
+ * 代表已存檔的遺失物驗證結構
  */
-export interface Item {
-  id: string;
-  imageUrls: string[];
-  blurhashes?: string[];
-  nameTag: string;
-  category: Category;
-  description: string;
-  foundDate: string;
-  location: Location;
-  isDeleted?: boolean;
-}
+export const ItemSchema = z.object({
+  id: z.string(),
+  imageUrls: z.array(z.string()),
+  blurhashes: z.array(z.string()).optional(),
+  nameTag: z.string().min(1, "Name tag cannot be empty"),
+  category: CategorySchema,
+  description: z.string(),
+  foundDate: z.string(),
+  location: LocationSchema,
+  isDeleted: z.boolean().optional(),
+});
+
+export type Item = z.infer<typeof ItemSchema>;
 
 /**
- * 代表上傳暫存區中的物品，繼承 Item 但移除日期並加入 UI 狀態
+ * 代表上傳暫存區中的物品驗證結構
  */
-export interface PendingItem extends Omit<Item, 'foundDate'> {
-  customLocation?: string;
-  isAnalyzing: boolean;
-  activePreviewIdx: number;
-}
+export const PendingItemSchema = ItemSchema.omit({ foundDate: true }).extend({
+  customLocation: z.string().optional(),
+  isAnalyzing: z.boolean(),
+  activePreviewIdx: z.number(),
+});
+
+export type PendingItem = z.infer<typeof PendingItemSchema>;
 
 /**
  * Gemini AI 回傳的 JSON 結構定義
  */
-export interface GeminiAnalysis {
-  nameTag: string;
-  category: Category;
-  description: string;
-}
+export const GeminiAnalysisSchema = z.object({
+  nameTag: z.string(),
+  category: CategorySchema,
+  description: z.string(),
+});
+
+export type GeminiAnalysis = z.infer<typeof GeminiAnalysisSchema>;
 
 /**
  * 擴充 Vite 的環境變數型別定義

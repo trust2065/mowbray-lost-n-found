@@ -1,6 +1,7 @@
 import React from 'react';
 import { CATEGORIES } from '../constants';
 import type { PendingItem, GeminiAnalysis } from '../types';
+import { GeminiAnalysisSchema } from '../types';
 
 export const useGeminiAPI = () => {
   const autoFillItem = async (
@@ -76,7 +77,7 @@ export const useGeminiAPI = () => {
 
       const responseText = await proxyResponse.text();
 
-      // Safe JSON parsing with fallback values
+      // Safe JSON parsing with Zod validation
       let analysis: GeminiAnalysis;
       try {
         const responseJson = JSON.parse(responseText);
@@ -85,20 +86,32 @@ export const useGeminiAPI = () => {
         const analysisText = responseJson.candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (analysisText) {
-          analysis = JSON.parse(analysisText);
-          console.log('AI Analysis successful:', analysis);
+          const rawAnalysis = JSON.parse(analysisText);
+          const result = GeminiAnalysisSchema.safeParse(rawAnalysis);
+
+          if (result.success) {
+            analysis = result.data;
+            console.log('AI Analysis successful and validated:', analysis);
+          } else {
+            console.warn('AI Analysis failed validation, using fallback values:', result.error.format());
+            analysis = {
+              nameTag: rawAnalysis.nameTag || 'Unknown',
+              category: CATEGORIES[0], // Fallback to first valid category
+              description: rawAnalysis.description || 'Analysis failed validation'
+            };
+          }
         } else {
           throw new Error('No analysis text found in Gemini response');
         }
       } catch (parseError: unknown) {
-        console.error('JSON parsing error:', {
+        console.error('JSON parsing/validation error:', {
           error: parseError instanceof Error ? parseError.message : String(parseError),
-          responseText: responseText.substring(0, 200) + '...' // Truncate long responses
+          responseText: responseText.substring(0, 200) + '...'
         });
         analysis = {
           nameTag: 'Unknown',
           category: CATEGORIES[0],
-          description: 'Unable to analyze image - JSON parsing failed'
+          description: 'Unable to analyze image - Parsing failed'
         };
       }
 

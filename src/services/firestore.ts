@@ -12,7 +12,34 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { ItemSchema } from '../types';
 import type { Item } from '../types';
+
+/**
+ * 驗證並整理 Firestore 資料為 Item 型別
+ */
+const validateAndParseItem = (docId: string, data: unknown): Item | null => {
+  try {
+    if (!data || typeof data !== 'object') return null;
+    const firestoreData = data as Record<string, unknown>; // Use unknown instead of any
+
+    const rawItem = {
+      id: docId,
+      ...firestoreData,
+      foundDate: firestoreData.foundDate instanceof Timestamp ? firestoreData.foundDate.toDate().toISOString() : firestoreData.foundDate
+    };
+
+    const result = ItemSchema.safeParse(rawItem);
+    if (!result.success) {
+      console.warn(`Item ${docId} failed validation:`, result.error.format());
+      return null;
+    }
+    return result.data;
+  } catch (e) {
+    console.error(`Error parsing item ${docId}:`, e);
+    return null;
+  }
+};
 
 // Client-side types for internal testing and error handling
 export interface SimpleTestItem {
@@ -61,14 +88,9 @@ export const getItems = async (): Promise<Item[]> => {
   const q = query(collection(db, ITEMS_COLLECTION), orderBy('foundDate', 'desc'));
   const querySnapshot = await getDocs(q);
 
-  return querySnapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      ...data,
-      foundDate: data.foundDate.toDate().toISOString()
-    } as Item;
-  });
+  return querySnapshot.docs
+    .map(doc => validateAndParseItem(doc.id, doc.data()))
+    .filter((item): item is Item => item !== null);
 };
 
 // Test item in the SAME collection as the main app
@@ -236,14 +258,9 @@ export const subscribeToItems = (callback: (items: Item[]) => void) => {
 
   return onSnapshot(q,
     (querySnapshot) => {
-      const items = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          foundDate: data.foundDate.toDate().toISOString()
-        } as Item;
-      }).filter(item => !item.isDeleted);
+      const items = querySnapshot.docs
+        .map(doc => validateAndParseItem(doc.id, doc.data()))
+        .filter((item): item is Item => item !== null && !item.isDeleted);
       callback(items);
     },
     (error) => {
@@ -270,15 +287,8 @@ export const subscribeToItemsSmart = (
       }
 
       const items = querySnapshot.docs
-        .map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-            foundDate: data.foundDate.toDate().toISOString()
-          } as Item;
-        })
-        .filter(item => !item.isDeleted); // Client-side filtering to avoid index requirements
+        .map(doc => validateAndParseItem(doc.id, doc.data()))
+        .filter((item): item is Item => item !== null && !item.isDeleted); // Client-side filtering to avoid index requirements
 
       callback(items);
     },
