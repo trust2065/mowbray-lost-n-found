@@ -13,7 +13,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:e2e": "VITE_USE_FIREBASE_EMULATOR=true firebase emulators:exec --ui \"npx playwright test e2e/workflow-staff.spec.ts\""
+    "test:e2e": "VITE_USE_FIREBASE_EMULATOR=true firebase emulators:exec --ui \"npx playwright test e2e/workflow-staff.spec.ts\"",
+    "test:e2e:ci": "VITE_USE_FIREBASE_EMULATOR=true firebase emulators:exec \"npx playwright test\""
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

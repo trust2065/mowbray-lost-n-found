@@ -25,7 +25,7 @@
 - [x] Zustand Store
 - [x] Make AI refill work again in dev/prod (when goes to prod, i move the folder to /api and change the endpoint from localhost to /api)
 - [x] **Data Validation**: Integrate `Zod` for runtime schema validation to ensure database data strictly matches our `Category` and `Location` types.
-- [ ] **CI/CD Integration**: Setup GitHub Actions to automatically run Playwright E2E and Vitest unit tests on every Push.
+- [x] **CI/CD Integration**: Setup GitHub Actions to automatically run Playwright E2E and Vitest unit tests on every Push.
 - [ ] **Smart Search (RAG)**: Implement vector search (using embeddings) to allow natural language queries like "that blue jacket with the yellow zipper."
 
 ## Before release
