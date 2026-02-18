@@ -61,12 +61,14 @@ const PhotoViewer: React.FC<PhotoViewerProps> = ({ urls, initialIndex, isOpen, o
           onClick={handleDownload}
           className="p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
           title="Download"
+          aria-label="Download photo"
         >
           <Download className="w-6 h-6" />
         </button>
         <button
           onClick={onClose}
           className="p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+          aria-label="Close viewer"
         >
           <X className="w-6 h-6" />
         </button>
@@ -77,12 +79,14 @@ const PhotoViewer: React.FC<PhotoViewerProps> = ({ urls, initialIndex, isOpen, o
           <button
             onClick={handlePrev}
             className="absolute left-6 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-10"
+            aria-label="Previous photo"
           >
             <ChevronLeft className="w-8 h-8" />
           </button>
           <button
             onClick={handleNext}
             className="absolute right-6 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-10"
+            aria-label="Next photo"
           >
             <ChevronRight className="w-8 h-8" />
           </button>

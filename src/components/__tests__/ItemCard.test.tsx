@@ -26,7 +26,7 @@ describe('ItemCard', () => {
     description: 'A blue school hat found near the slide',
     foundDate: '2023-01-01T10:00:00Z',
     imageUrls: ['http://example.com/image1.jpg'],
-    blurhashes: ['LEHV6nWB2yk8pyo0adR*.7kCMdnj']
+    blurhashes: ['L6PZfSi_*.L6PZfSi_']
   };
 
   const defaultProps = {
