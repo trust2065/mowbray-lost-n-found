@@ -10,6 +10,28 @@ A modern React application for managing lost and found items at Mowbray Public S
 - **Admin Access**: Staff mode for full historical access
 - **Responsive Design**: Works on desktop and mobile devices
 
+## Test Commands
+
+- `npm test`: Run unit tests (Vitest)
+- `npm run test:e2e`: Run E2E tests (Playwright) against local Firebase Emulator (Headless mode)
+- `npm run test:ui`: Open Vitest UI for unit tests
+
+## Important: Firebase Emulators
+
+This project uses Firebase Emulators for development and testing to prevent accidental changes to the production database.
+
+**Setup:**
+1. Install Firebase Tools: `npm install -g firebase-tools`
+2. Login: `firebase login`
+3. Initialize Emulators (if not done): `firebase init emulators` (Select Firestore & Storage)
+4. Ensure you have Java 21+ installed (required for emulators).
+
+**Running E2E Tests:**
+The command `npm run test:e2e` will automatically:
+1. Start the Firebase Emulators.
+2. Run the Playwright tests in headless mode.
+3. Shut down the emulators upon completion.
+
 ## Security Improvements
 
 ✅ **Server-Side API Proxy**: Gemini API key is now secured on the backend

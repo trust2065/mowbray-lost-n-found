@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "test:e2e": "VITE_USE_FIREBASE_EMULATOR=true firebase emulators:exec --ui \"npx playwright test e2e/workflow-staff.spec.ts\""
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
