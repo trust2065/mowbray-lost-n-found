@@ -289,6 +289,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-slate-400 dark:text-slate-500 ml-2 uppercase">Location</label>
                         <select
+                          id={`location-select-${index}`}
                           className="w-full bg-slate-50 dark:bg-slate-700 border-none rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-all appearance-none"
                           value={item.location}
                           onChange={(e) => onUpdatePendingField(index, 'location', e.target.value)}
