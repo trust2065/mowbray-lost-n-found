@@ -10,10 +10,13 @@ interface PhotoViewerProps {
 
 const PhotoViewer: React.FC<PhotoViewerProps> = ({ urls, initialIndex, isOpen, onClose }) => {
   const [currentIndex, setCurrentIndex] = React.useState(initialIndex);
+  const [prevInitialIndex, setPrevInitialIndex] = React.useState(initialIndex);
 
-  useEffect(() => {
+  // Sync state with props during render if initialIndex changes
+  if (initialIndex !== prevInitialIndex) {
+    setPrevInitialIndex(initialIndex);
     setCurrentIndex(initialIndex);
-  }, [initialIndex, isOpen]);
+  }
 
   const handlePrev = React.useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();

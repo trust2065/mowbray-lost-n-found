@@ -25,9 +25,7 @@ test.describe('Validation & Edge Cases', () => {
     // `useFileUpload.ts` has logic.
 
     // Monitor for alert dialog
-    let alertMessage = '';
     page.once('dialog', dialog => {
-      alertMessage = dialog.message();
       dialog.dismiss();
     });
 
@@ -38,7 +36,7 @@ test.describe('Validation & Edge Cases', () => {
     });
 
     // Check if item was added. If rejected, no item card should appear.
-    const itemCard = page.locator('.bg-white.rounded-lg.shadow-sm.p-4.mb-4.border.border-slate-200');
+
     // Original code uses "Item 1" text for header in card
     await expect(page.getByText('Item 1')).not.toBeVisible();
 

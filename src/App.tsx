@@ -232,7 +232,7 @@ const App: React.FC = () => {
 
     // Semantic Ranking
     if (isSemanticSearch && queryEmbedding) {
-      result = result
+      return result
         .map(item => ({
           ...item,
           similarity: item.embedding ? cosineSimilarity(queryEmbedding, item.embedding) : 0
@@ -241,7 +241,7 @@ const App: React.FC = () => {
           if (searchQuery.length < 5) return true; // Less aggressive filtering for short queries
           return item.similarity > 0.4;
         })
-        .sort((a, b) => (b.similarity || 0) - (a.similarity || 0));
+        .sort((a, b) => (b.similarity || 0) - (a.similarity || 0)) as (Item & { similarity: number; })[];
     }
 
     return result;
@@ -354,7 +354,7 @@ const App: React.FC = () => {
                   onPhotoClick={handlePhotoClick}
                   isAdmin={isAdmin}
                   onDelete={handleDelete}
-                  similarity={(item as any).similarity}
+                  similarity={(item as Item & { similarity?: number; }).similarity}
                 />
               ))}
             </div>
