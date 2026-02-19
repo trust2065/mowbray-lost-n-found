@@ -15,6 +15,16 @@ const PhotoViewer: React.FC<PhotoViewerProps> = ({ urls, initialIndex, isOpen, o
     setCurrentIndex(initialIndex);
   }, [initialIndex, isOpen]);
 
+  const handlePrev = React.useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : urls.length - 1));
+  }, [urls.length]);
+
+  const handleNext = React.useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setCurrentIndex((prev) => (prev < urls.length - 1 ? prev + 1 : 0));
+  }, [urls.length]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -26,19 +36,9 @@ const PhotoViewer: React.FC<PhotoViewerProps> = ({ urls, initialIndex, isOpen, o
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex, urls.length]);
+  }, [isOpen, handleNext, handlePrev, onClose]);
 
   if (!isOpen) return null;
-
-  const handlePrev = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : urls.length - 1));
-  };
-
-  const handleNext = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setCurrentIndex((prev) => (prev < urls.length - 1 ? prev + 1 : 0));
-  };
 
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
