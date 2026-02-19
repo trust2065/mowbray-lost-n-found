@@ -183,5 +183,29 @@ export const useGeminiAPI = () => {
     }
   };
 
-  return { autoFillItem, cancelAiFill, cleanup };
+  const generateEmbedding = async (text: string, taskType: 'RETRIEVAL_DOCUMENT' | 'RETRIEVAL_QUERY' = 'RETRIEVAL_DOCUMENT'): Promise<number[] | null> => {
+    try {
+      const response = await fetch('/api/gemini/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'embed',
+          text,
+          taskType
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate embedding');
+      }
+
+      const result = await response.json();
+      return result.embedding?.values || null;
+    } catch (error) {
+      console.error('Embedding error:', error);
+      return null;
+    }
+  };
+
+  return { autoFillItem, cancelAiFill, cleanup, generateEmbedding };
 };

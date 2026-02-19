@@ -24,6 +24,7 @@ export const ItemSchema = z.object({
   foundDate: z.string(),
   location: LocationSchema,
   isDeleted: z.boolean().optional(),
+  embedding: z.array(z.number()).optional(),
 });
 
 export type Item = z.infer<typeof ItemSchema>;

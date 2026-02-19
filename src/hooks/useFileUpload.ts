@@ -4,6 +4,7 @@ import { uploadMultipleImages } from '../services/storage';
 import { addItem } from '../services/firestore';
 import { compressImage, needsCompression, formatFileSize, isFileTooLarge } from '../utils/imageCompression';
 import { encodeImageToBlurhash } from '../utils/blurhash';
+import { getItemSearchText } from '../utils/vector';
 
 // Validation helper for name tags
 export const validateNameTag = (nameTag: string): { isValid: boolean; message?: string; } => {
@@ -152,6 +153,7 @@ export const useFileUpload = (
     setPendingItems: React.Dispatch<React.SetStateAction<PendingItem[]>>,
     setIsUploadModalOpen: (open: boolean) => void,
     setShowSuccessToast: (show: boolean) => void,
+    generateEmbedding: (text: string, taskType?: 'RETRIEVAL_DOCUMENT' | 'RETRIEVAL_QUERY') => Promise<number[] | null>,
     setItems?: React.Dispatch<React.SetStateAction<Item[]>>
   ): Promise<void> => {
     // Validate all items before upload
@@ -221,6 +223,15 @@ export const useFileUpload = (
           // Upload images to Firebase Storage
           const imageUrls = await uploadMultipleImages(imageFiles, pendingItem.id);
 
+          // Generate embedding for semantic search
+          const searchText = getItemSearchText({
+            nameTag: pendingItem.nameTag,
+            category: pendingItem.category,
+            description: pendingItem.description,
+            location: pendingItem.location === 'Other' ? (pendingItem.customLocation || 'Other Area') : pendingItem.location
+          });
+          const embedding = await generateEmbedding(searchText, 'RETRIEVAL_DOCUMENT');
+
           // Create item for Firestore
           const itemData: Omit<Item, 'id'> = {
             imageUrls,
@@ -229,7 +240,8 @@ export const useFileUpload = (
             category: pendingItem.category,
             description: pendingItem.description,
             foundDate: new Date(Date.now() - index * 1000).toISOString(), // Use staggered timestamp
-            location: pendingItem.location === 'Other' ? (pendingItem.customLocation || 'Other Area') : pendingItem.location
+            location: pendingItem.location === 'Other' ? (pendingItem.customLocation || 'Other Area') : pendingItem.location,
+            embedding: embedding || undefined
           };
 
           const realId = await addItem(itemData);

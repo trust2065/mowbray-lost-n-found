@@ -10,9 +10,10 @@ interface ItemCardProps {
   isAdmin?: boolean;
   onPhotoClick: (urls: string[], index: number) => void;
   onDelete?: (id: string) => void;
+  similarity?: number;
 }
 
-const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, isAdmin, onPhotoClick, onDelete }) => {
+const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, isAdmin, onPhotoClick, onDelete, similarity }) => {
   const [imgLoaded, setImgLoaded] = useState(false);
 
   // Reset loaded state if image changes (unlikely for existing item but good practice)
@@ -74,8 +75,13 @@ const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, isAdmin, onPho
             <h3 className={`font-bold text-slate-800 dark:text-slate-100 leading-tight ${viewMode === 'grid' ? 'text-lg mb-1' : 'text-base mb-0.5'}`}>
               {item.nameTag || 'Unknown Item'}
             </h3>
-            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 capitalize">
+            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 capitalize flex items-center gap-2">
               {item.category}
+              {similarity !== undefined && similarity > 0 && (
+                <span className="bg-emerald-100 dark:bg-emerald-900/40 px-1.5 py-0.5 rounded text-[10px] font-black animate-pulse">
+                  {Math.round(similarity * 100)}% Match
+                </span>
+              )}
             </p>
           </div>
 
@@ -143,6 +149,7 @@ const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, isAdmin, onPho
   // Only re-render when item ID, viewMode, or admin status changes
   return prevProps.item.id === nextProps.item.id &&
     prevProps.viewMode === nextProps.viewMode &&
+    prevProps.similarity === nextProps.similarity &&
     prevProps.isAdmin === nextProps.isAdmin;
 });
 

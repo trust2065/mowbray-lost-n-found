@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Plus, ShieldCheck, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ADMIN_PASSCODE, CATEGORIES, LOCATIONS } from './constants';
+import { cosineSimilarity } from './utils/vector';
 import type { Item, PendingItem, ViewMode } from './types';
 import { useGeminiAPI } from './hooks/useGeminiAPI';
 import { useFileUpload } from './hooks/useFileUpload';
@@ -60,6 +61,10 @@ const App: React.FC = () => {
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
   const [showSuccessToast, setShowSuccessToast] = useState<boolean>(false);
 
+  const [isSemanticSearch, setIsSemanticSearch] = useState<boolean>(false);
+  const [queryEmbedding, setQueryEmbedding] = useState<number[] | null>(null);
+  const [isEmbeddingLoading, setIsEmbeddingLoading] = useState<boolean>(false);
+
   const [photoViewer, setPhotoViewer] = useState<{ isOpen: boolean; urls: string[]; index: number; }>({
     isOpen: false,
     urls: [],
@@ -68,7 +73,7 @@ const App: React.FC = () => {
 
   const [showPrivacyModal, setShowPrivacyModal] = useState<boolean>(false);
 
-  const { autoFillItem, cancelAiFill, cleanup } = useGeminiAPI();
+  const { autoFillItem, cancelAiFill, cleanup, generateEmbedding } = useGeminiAPI();
   const {
     handleFileSelect,
     updatePendingField,
@@ -111,6 +116,64 @@ const App: React.FC = () => {
     };
   }, []); // Empty dependency array - only run on unmount
 
+  const [isIndexing, setIsIndexing] = useState(false);
+  const handleIndexItems = async () => {
+    if (!isAdmin) return;
+    if (!confirm('This will generate AI embeddings for all items. Continue?')) return;
+
+    setIsIndexing(true);
+    const { getItemSearchText } = await import('./utils/vector');
+    const { updateItem } = await import('./services/firestore');
+
+    try {
+      let count = 0;
+      let skipped = 0;
+      let failed = 0;
+
+      console.log(`[Indexing] Starting scan of ${items.length} items...`);
+      console.table(items.map(i => ({
+        id: i.id,
+        name: i.nameTag,
+        hasEmbedding: !!i.embedding && i.embedding.length > 0
+      })));
+
+      for (const item of items) {
+        const hasEmbedding = !!item.embedding && item.embedding.length > 0;
+
+        if (!hasEmbedding) {
+          try {
+            console.log(`[Indexing] Working on: ${item.nameTag} (${item.id})`);
+            const searchText = getItemSearchText(item);
+            const embedding = await generateEmbedding(searchText, 'RETRIEVAL_DOCUMENT');
+
+            if (embedding && embedding.length > 0) {
+              await updateItem(item.id, { embedding });
+              console.log(`[Indexing] ✅ Success: ${item.nameTag}`);
+              count++;
+            } else {
+              console.warn(`[Indexing] ⚠️ No embedding returned for: ${item.nameTag}`);
+              failed++;
+            }
+          } catch (itemError) {
+            console.error(`[Indexing] ❌ Error processing ${item.nameTag}:`, itemError);
+            failed++;
+          }
+        } else {
+          skipped++;
+        }
+      }
+
+      const summary = `Index scan finished!\n- Newly indexed: ${count}\n- Already had index: ${skipped}\n- Failed: ${failed}`;
+      console.log(summary);
+      alert(summary);
+    } catch (error) {
+      console.error('[Indexing] Critical failure:', error);
+      alert('Indexing failed due to a critical error.');
+    } finally {
+      setIsIndexing(false);
+    }
+  };
+
   const handlePhotoClick = useCallback((urls: string[], index: number) => {
     setPhotoViewer({ isOpen: true, urls, index });
   }, []);
@@ -131,22 +194,58 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // --- Semantic Search Logic ---
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (isSemanticSearch && searchQuery.trim().length > 2) {
+        setIsEmbeddingLoading(true);
+        const embedding = await generateEmbedding(searchQuery, 'RETRIEVAL_QUERY');
+        setQueryEmbedding(embedding);
+        setIsEmbeddingLoading(false);
+      } else {
+        setQueryEmbedding(null);
+      }
+    }, 500); // Debounce AI request
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, isSemanticSearch]);
+
   const filteredItems = useMemo(() => {
     const isRecent = (dateStr: string): boolean => {
       const diff = Math.abs(Date.now() - new Date(dateStr).getTime());
       return diff <= 14 * 24 * 60 * 60 * 1000; // 14 days in ms
     };
 
-    return items.filter(item => {
+    let result = items.filter(item => {
       if (!isAdmin && !isRecent(item.foundDate)) return false;
-      const q = searchQuery.toLowerCase();
-      const matchesSearch = item.nameTag.toLowerCase().includes(q) ||
-        item.description.toLowerCase().includes(q) ||
-        item.location.toLowerCase().includes(q);
       const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+      if (!matchesCategory) return false;
+
+      if (!isSemanticSearch || !queryEmbedding) {
+        const q = searchQuery.toLowerCase();
+        return item.nameTag.toLowerCase().includes(q) ||
+          item.description.toLowerCase().includes(q) ||
+          item.location.toLowerCase().includes(q);
+      }
+      return true; // If semantic search is on, we filter/sort by similarity later
     });
-  }, [items, searchQuery, selectedCategory, isAdmin]);
+
+    // Semantic Ranking
+    if (isSemanticSearch && queryEmbedding) {
+      result = result
+        .map(item => ({
+          ...item,
+          similarity: item.embedding ? cosineSimilarity(queryEmbedding, item.embedding) : 0
+        }))
+        .filter(item => {
+          if (searchQuery.length < 5) return true; // Less aggressive filtering for short queries
+          return item.similarity > 0.4;
+        })
+        .sort((a, b) => (b.similarity || 0) - (a.similarity || 0));
+    }
+
+    return result;
+  }, [items, searchQuery, selectedCategory, isAdmin, isSemanticSearch, queryEmbedding]);
 
   const paginatedItems = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -176,7 +275,7 @@ const App: React.FC = () => {
   };
 
   const confirmUploadWrapper = (): void => {
-    confirmUpload(pendingItems, setPendingItems, setIsUploadModalOpen, setShowSuccessToast, setItems);
+    confirmUpload(pendingItems, setPendingItems, setIsUploadModalOpen, setShowSuccessToast, generateEmbedding, setItems);
   };
 
   const autoFillItemWrapper = (index: number): void => {
@@ -198,6 +297,9 @@ const App: React.FC = () => {
         onTitleDoubleClick={ADMIN_PASSCODE ? () => setShowPasscodeModal(true) : undefined}
         isDarkMode={isDarkMode}
         toggleDarkMode={toggleDarkMode}
+        isSemanticSearch={isSemanticSearch}
+        setIsSemanticSearch={setIsSemanticSearch}
+        isEmbeddingLoading={isEmbeddingLoading}
       />
 
       <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 flex-1 w-full">
@@ -211,6 +313,13 @@ const App: React.FC = () => {
               </div>
             </div>
             <div className="flex gap-2">
+              <button
+                onClick={handleIndexItems}
+                disabled={isIndexing || items.length === 0}
+                className="text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isIndexing ? 'Indexing...' : 'Re-index Smart Search'}
+              </button>
               <button onClick={handleDeleteAllItems} className="text-xs font-bold bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-xl shadow-sm transition-colors">Delete All</button>
               <button onClick={handleAdminLogout} className="text-xs font-bold bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Logout</button>
             </div>
@@ -245,6 +354,7 @@ const App: React.FC = () => {
                   onPhotoClick={handlePhotoClick}
                   isAdmin={isAdmin}
                   onDelete={handleDelete}
+                  similarity={(item as any).similarity}
                 />
               ))}
             </div>

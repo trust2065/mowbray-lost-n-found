@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, LayoutGrid, List, ShieldCheck, Sun, Moon } from 'lucide-react';
+import { Search, LayoutGrid, List, ShieldCheck, Sun, Moon, Sparkles, Loader2 } from 'lucide-react';
 import type { ViewMode } from '../types';
 
 interface HeaderProps {
@@ -12,6 +12,9 @@ interface HeaderProps {
   onAdminToggle?: () => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  isSemanticSearch: boolean;
+  setIsSemanticSearch: (value: boolean) => void;
+  isEmbeddingLoading: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -23,7 +26,10 @@ const Header: React.FC<HeaderProps> = ({
   isAdmin = false,
   onAdminToggle,
   isDarkMode,
-  toggleDarkMode
+  toggleDarkMode,
+  isSemanticSearch,
+  setIsSemanticSearch,
+  isEmbeddingLoading
 }) => {
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
@@ -132,11 +138,25 @@ const Header: React.FC<HeaderProps> = ({
             </div>
             <input
               type="text"
-              placeholder="Search items..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white border-2 border-transparent rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-white outline-none transition-all shadow-inner dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 dark:border-slate-700"
+              placeholder={isSemanticSearch ? "Describe what you lost..." : "Search items..."}
+              className={`w-full pl-10 pr-20 py-2.5 bg-white border-2 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 outline-none transition-all shadow-inner dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 ${isSemanticSearch ? 'border-emerald-500' : 'border-transparent dark:border-slate-700'}`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-2">
+              {isEmbeddingLoading && <Loader2 className="w-4 h-4 text-emerald-500 animate-spin" />}
+              <button
+                onClick={() => setIsSemanticSearch(!isSemanticSearch)}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all ${isSemanticSearch
+                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                  : 'bg-slate-100 text-slate-400 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-500'
+                  }`}
+                title={isSemanticSearch ? "Switch to Keyword Search" : "Try Smart Search (AI)"}
+              >
+                <Sparkles className={`w-3 h-3 ${isSemanticSearch ? 'animate-pulse' : ''}`} />
+                <span className="hidden xs:inline">{isSemanticSearch ? 'Smart' : 'AI'}</span>
+              </button>
+            </div>
           </div>
 
           <div className="hidden sm:flex gap-2">
