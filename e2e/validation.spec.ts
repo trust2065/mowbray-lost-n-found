@@ -3,7 +3,14 @@ import { test, expect } from '@playwright/test';
 test.describe('Validation & Edge Cases', () => {
 
   test.beforeEach(async ({ page }) => {
-    page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
+    // Mock Gemini API globally for this spec to prevent proxy errors
+    await page.route('**/api/gemini/analyze', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ embedding: { values: new Array(768).fill(0) } })
+      });
+    });
     await page.goto('/');
 
     // Open upload modal
@@ -40,7 +47,6 @@ test.describe('Validation & Edge Cases', () => {
     await descInput.fill(longText);
 
     // If there's a character counter or warning, we could check it.
-    // Our App currently doesn't block > 500 but we can check if it accepts it.
     await expect(descInput).toHaveValue(longText);
   });
 
@@ -57,7 +63,7 @@ test.describe('Validation & Edge Cases', () => {
     let alertMessage = '';
     page.on('dialog', async d => {
       alertMessage = d.message();
-      await d.accept(); // "Continue anyway?" usually
+      await d.accept();
     });
 
     await page.getByRole('button', { name: /Post 1 Item/i }).click();

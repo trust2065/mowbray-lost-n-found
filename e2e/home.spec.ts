@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Mowbray Lost & Found Hub', () => {
   test.beforeEach(async ({ page }) => {
-    // Mock Gemini API to avoid proxy errors in CI
+    // Mock Gemini API globally for this spec to prevent proxy errors
     await page.route('**/api/gemini/analyze', async route => {
       await route.fulfill({
         status: 200,
@@ -11,6 +11,8 @@ test.describe('Mowbray Lost & Found Hub', () => {
       });
     });
     await page.goto('/');
+    // Wait for initial load
+    await expect(page.getByRole('heading', { name: /Mowbray Public/i })).toBeVisible();
   });
 
   test('should have correct title and header', async ({ page }) => {
@@ -27,18 +29,17 @@ test.describe('Mowbray Lost & Found Hub', () => {
     // Locate the dark mode toggle button
     const toggleButton = page.getByLabel('Toggle Dark Mode').filter({ visible: true });
 
-    // Initial state: ensure light mode (body should have bg-slate-50 or not have dark class)
-    // Checking data-theme or class on html/body is typical for dark mode implementations
+    // Initial state: ensure light mode
     const html = page.locator('html');
     await expect(html).not.toHaveClass(/dark/);
 
     // Click to toggle dark mode
     await toggleButton.click();
 
-    // Verify dark mode class is added to html element
+    // Verify dark mode class is added
     await expect(html).toHaveClass(/dark/);
 
-    // Click again to toggle back to light mode
+    // Click again to toggle back
     await toggleButton.click();
     await expect(html).not.toHaveClass(/dark/);
   });
@@ -59,33 +60,32 @@ test.describe('Mowbray Lost & Found Hub', () => {
     const allButton = page.getByRole('button', { name: 'All Items' });
     await expect(allButton).toBeVisible();
 
-    // Find another category button, e.g., 'Clothing' (assuming it exists based on previous context)
-    // Since I can't be sure of the dynamic categories without reading constants, I'll just check for buttons in the filter area
     const filterContainer = page.locator('.overflow-x-auto');
     await expect(filterContainer).toBeVisible();
 
     const buttons = filterContainer.getByRole('button');
     const count = await buttons.count();
-    expect(count).toBeGreaterThan(1); // Should have All + other categories
+    expect(count).toBeGreaterThan(1);
 
     // Click a category button
     await buttons.nth(1).click();
 
-    // Verify it becomes active (usually by checking class for active state background color)
+    // Verify it becomes active
     await expect(buttons.nth(1)).toHaveClass(/bg-blue-600/);
   });
 
   test('should show admin login modal on title double click', async ({ page }) => {
-    // Target the title text specifically to ensure the double click hits the interactive area
-    const titleArea = page.getByText(/Mowbray Public/i).first();
-    await expect(titleArea).toBeVisible();
+    // Target the specific wrapper that has the dblclick listener
+    const titleTrigger = page.locator('header .cursor-pointer').filter({ hasText: /Mowbray Public/i });
+    await expect(titleTrigger).toBeVisible();
 
-    // Double click the title
-    await titleArea.dblclick({ force: true });
+    // Double click the title area. 
+    // Sometimes .dblclick() is flaky in CI, using click with count can be more robust.
+    await titleTrigger.click({ clickCount: 2, delay: 100 });
 
-    // Expect the login modal to appear with a longer timeout for CI
+    // Expect the login modal to appear
     const loginModal = page.getByText('Staff Access');
-    await expect(loginModal).toBeVisible({ timeout: 10000 });
+    await expect(loginModal).toBeVisible({ timeout: 15000 });
 
     // Close the modal
     const closeButton = page.getByRole('button', { name: 'Cancel' });

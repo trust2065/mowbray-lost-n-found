@@ -3,6 +3,14 @@ import { test, expect } from '@playwright/test';
 test.describe('Guest Workflow: Upload Item', () => {
 
   test.beforeEach(async ({ page }) => {
+    // Mock Gemini API globally for this spec to prevent proxy errors
+    await page.route('**/api/gemini/analyze', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ embedding: { values: new Array(768).fill(0) } })
+      });
+    });
     await page.goto('/');
   });
 
@@ -25,7 +33,6 @@ test.describe('Guest Workflow: Upload Item', () => {
     });
 
     // 4. Fill in details manually
-    // Use { exact: true } to avoid strict mode violation with previously indexed "RAG Item 1"
     await expect(page.getByText('Item 1', { exact: true })).toBeVisible();
 
     const nameInput = page.locator('#name-input-0');
