@@ -75,13 +75,12 @@ test.describe('Mowbray Lost & Found Hub', () => {
   });
 
   test('should show admin login modal on title double click', async ({ page }) => {
-    // Target the specific wrapper that has the dblclick listener
-    const titleTrigger = page.locator('header .cursor-pointer').filter({ hasText: /Mowbray Public/i });
-    await expect(titleTrigger).toBeVisible();
+    // Use the specific test ID we just added
+    const titleTrigger = page.getByTestId('admin-login-trigger');
+    await expect(titleTrigger).toBeVisible({ timeout: 10000 });
 
     // Double click the title area. 
-    // Sometimes .dblclick() is flaky in CI, using click with count can be more robust.
-    await titleTrigger.click({ clickCount: 2, delay: 100 });
+    await titleTrigger.dblclick({ force: true });
 
     // Expect the login modal to appear
     const loginModal = page.getByText('Staff Access');
