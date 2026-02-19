@@ -15,13 +15,6 @@ test.describe('Validation & Edge Cases', () => {
     const buffer = Buffer.from('this is a text file');
     const fileInput = page.locator('input[type="file"]').first();
 
-    // Use dialog listener for alert
-    let alertMsg = '';
-    page.on('dialog', async d => {
-      alertMsg = d.message();
-      await d.dismiss();
-    });
-
     await fileInput.setInputFiles({
       name: 'test.txt',
       mimeType: 'text/plain',

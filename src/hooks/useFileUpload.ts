@@ -165,9 +165,9 @@ export const useFileUpload = (
 
           const embedding = await generateEmbedding(searchText);
 
-          const itemData: any = {
+          const itemData: Omit<Item, 'id'> = {
             imageUrls: pendingItem.imageUrls,
-            blurhashes: pendingItem.blurhashes,
+            blurhashes: pendingItem.blurhashes || [],
             nameTag: pendingItem.nameTag,
             category: pendingItem.category,
             description: pendingItem.description,
@@ -194,7 +194,7 @@ export const useFileUpload = (
     } catch (error) {
       console.error('Upload process failed:', error);
     }
-  }, [setIsSyncing]);
+  }, [setIsSyncing, optimisticIdsRef]);
 
   const closeAndCancelAll = useCallback((
     abortControllers: React.MutableRefObject<Map<string, AbortController>>,

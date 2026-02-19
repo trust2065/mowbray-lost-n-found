@@ -86,11 +86,12 @@ export const useGeminiAPI = () => {
           }
           : p
       ));
-    } catch (error: any) {
-      if (error.name === 'AbortError') return;
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') return;
 
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const debugEl = document.getElementById('ai-debug-error');
-      if (debugEl) debugEl.setAttribute('data-error', error.message);
+      if (debugEl) debugEl.setAttribute('data-error', errorMessage);
 
       setPendingItems(prev => prev.map(p =>
         p.id === item.id ? { ...p, isAnalyzing: false } : p
@@ -120,7 +121,7 @@ export const useGeminiAPI = () => {
       if (!response.ok) return null;
       const result = await response.json();
       return result.embedding?.values || null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }, []);
