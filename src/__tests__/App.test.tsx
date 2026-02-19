@@ -46,16 +46,17 @@ vi.mock('../hooks/useFileUpload', () => ({
 }));
 
 // Mock Services
-const mockSubscribeToItemsSmart = vi.fn();
+const mockSubscribeToItems = vi.fn();
 const mockDeleteItem = vi.fn();
 
 vi.mock('../services/firestore', () => ({
-  subscribeToItemsSmart: (callback: (items: Item[]) => void) => {
-    mockSubscribeToItemsSmart(callback);
+  subscribeToItems: (callback: (items: Item[]) => void) => {
+    mockSubscribeToItems(callback);
     return () => { }; // return unsubscribe function
   },
   deleteItem: (id: string) => mockDeleteItem(id),
   deleteAllItems: vi.fn(),
+  updateItem: vi.fn(),
 }));
 
 // Mock Utils
@@ -154,7 +155,7 @@ describe('App Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default mock implementation for subscription: return items immediately
-    mockSubscribeToItemsSmart.mockImplementation((callback) => {
+    mockSubscribeToItems.mockImplementation((callback) => {
       callback(mockItems);
     });
   });
@@ -275,7 +276,7 @@ describe('App Integration', () => {
       blurhashes: [],
     };
 
-    mockSubscribeToItemsSmart.mockImplementation((callback) => {
+    mockSubscribeToItems.mockImplementation((callback) => {
       callback([...mockItems, oldItem]);
     });
 
@@ -425,7 +426,7 @@ describe('App Integration', () => {
       blurhashes: [],
     }));
 
-    mockSubscribeToItemsSmart.mockImplementation((cb) => cb(manyItems));
+    mockSubscribeToItems.mockImplementation((cb) => cb(manyItems));
 
     render(<App />);
     await screen.findByText('Item 1');
@@ -449,7 +450,7 @@ describe('App Integration', () => {
   // ---- Empty state ----
 
   it('shows empty state when no items returned from Firestore', async () => {
-    mockSubscribeToItemsSmart.mockImplementation((cb) => cb([]));
+    mockSubscribeToItems.mockImplementation((cb) => cb([]));
 
     render(<App />);
 
