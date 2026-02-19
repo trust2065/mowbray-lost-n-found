@@ -103,10 +103,12 @@ const App: React.FC = () => {
     // Expose migration tool
     window.migrateBlurhashes = migrateBlurhashes;
 
+    const currentAbortControllers = abortControllers.current;
+
     return () => {
       // Cleanup all abort controllers
-      abortControllers.current.forEach(controller => controller.abort());
-      abortControllers.current.clear();
+      currentAbortControllers.forEach(controller => controller.abort());
+      currentAbortControllers.clear();
 
       // Cleanup all FileReaders
       cleanupReaders();
@@ -114,7 +116,7 @@ const App: React.FC = () => {
       // Cleanup AI requests
       cleanup(abortControllers);
     };
-  }, []); // Empty dependency array - only run on unmount
+  }, [cleanup, cleanupReaders]); // Added missing dependencies
 
   const [isIndexing, setIsIndexing] = useState(false);
   const handleIndexItems = async () => {
@@ -208,7 +210,7 @@ const App: React.FC = () => {
     }, 500); // Debounce AI request
 
     return () => clearTimeout(timer);
-  }, [searchQuery, isSemanticSearch]);
+  }, [searchQuery, isSemanticSearch, generateEmbedding]);
 
   const filteredItems = useMemo(() => {
     const isRecent = (dateStr: string): boolean => {
@@ -216,7 +218,7 @@ const App: React.FC = () => {
       return diff <= 14 * 24 * 60 * 60 * 1000; // 14 days in ms
     };
 
-    let result = items.filter(item => {
+    const result = items.filter(item => {
       if (!isAdmin && !isRecent(item.foundDate)) return false;
       const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
       if (!matchesCategory) return false;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Blurhash } from 'react-blurhash';
 
 interface GalleryProps {
@@ -11,16 +11,12 @@ const Gallery: React.FC<GalleryProps> = ({ urls, blurhashes, onPhotoClick }) => 
   const [idx, setIdx] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    // Check if the image is already cached
-    const img = new Image();
-    img.src = urls[idx];
-    if (img.complete) {
-      setLoaded(true);
-    } else {
-      setLoaded(false);
-    }
-  }, [idx, urls]);
+  // Reset loaded state when index or URL changes
+  const [prevUrl, setPrevUrl] = React.useState(urls[idx]);
+  if (urls[idx] !== prevUrl) {
+    setPrevUrl(urls[idx]);
+    setLoaded(false);
+  }
 
   if (!urls.length) return <div className="bg-slate-100 dark:bg-slate-800 w-full h-full" />;
 
@@ -48,6 +44,11 @@ const Gallery: React.FC<GalleryProps> = ({ urls, blurhashes, onPhotoClick }) => 
         loading="lazy"
         decoding="async"
         onLoad={() => setLoaded(true)}
+        ref={(el) => {
+          if (el && el.complete && !loaded) {
+            setLoaded(true);
+          }
+        }}
       />
       {urls.length > 1 && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 px-2 py-1 bg-black/20 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10">
