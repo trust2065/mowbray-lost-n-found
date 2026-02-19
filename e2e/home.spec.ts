@@ -17,7 +17,7 @@ test.describe('Mowbray Lost & Found Hub', () => {
 
   test('should allow toggling dark mode', async ({ page }) => {
     // Locate the dark mode toggle button
-    const toggleButton = page.getByLabel('Toggle Dark Mode');
+    const toggleButton = page.getByLabel('Toggle Dark Mode').filter({ visible: true });
 
     // Initial state: ensure light mode (body should have bg-slate-50 or not have dark class)
     // Checking data-theme or class on html/body is typical for dark mode implementations
@@ -36,7 +36,7 @@ test.describe('Mowbray Lost & Found Hub', () => {
   });
 
   test('should allow searching for items', async ({ page }) => {
-    const searchInput = page.getByPlaceholder(/Search for name, description and location/i);
+    const searchInput = page.getByPlaceholder(/Search items/i);
     await expect(searchInput).toBeVisible();
 
     // Type a search query
@@ -64,7 +64,7 @@ test.describe('Mowbray Lost & Found Hub', () => {
     await buttons.nth(1).click();
 
     // Verify it becomes active (usually by checking class for active state background color)
-    await expect(buttons.nth(1)).toHaveClass(/bg-emerald-600/);
+    await expect(buttons.nth(1)).toHaveClass(/bg-blue-600/);
   });
 
   test('should show admin login modal on title double click', async ({ page }) => {

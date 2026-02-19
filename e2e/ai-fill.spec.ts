@@ -74,7 +74,13 @@ test.describe('AI Auto Fill Feature', () => {
     const descriptionInput = page.locator('#description-input-0');
 
     // Wait for the values to be populated
-    await expect(nameInput).toHaveValue('Peter Parker', { timeout: 10000 });
+    try {
+      await expect(nameInput).toHaveValue('Peter Parker', { timeout: 10000 });
+    } catch (error) {
+      const debugErr = await page.locator('#ai-debug-error').getAttribute('data-error');
+      console.error('DEBUG AI ERROR:', debugErr);
+      throw error;
+    }
     await expect(descriptionInput).toHaveValue('Red and blue spandex suit');
 
     // Verify Category selection

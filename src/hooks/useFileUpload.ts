@@ -1,25 +1,14 @@
-import React, { useRef } from 'react';
-import type { PendingItem, Item } from '../types';
-import { uploadMultipleImages } from '../services/storage';
+import React, { useRef, useCallback, useMemo } from 'react';
 import { addItem } from '../services/firestore';
-import { compressImage, needsCompression, formatFileSize, isFileTooLarge } from '../utils/imageCompression';
+import type { PendingItem, Item } from '../types';
+import { CategorySchema, LocationSchema } from '../types';
+import { compressImage, needsCompression, isFileTooLarge } from '../utils/imageCompression';
 import { encodeImageToBlurhash } from '../utils/blurhash';
-import { getItemSearchText } from '../utils/vector';
 
-// Validation helper for name tags
-export const validateNameTag = (nameTag: string): { isValid: boolean; message?: string; } => {
-  // Check for empty, null, or undefined
-  if (!nameTag || nameTag.trim() === '') {
-    return { isValid: false, message: 'Name cannot be empty' };
+export const validateNameTag = (name: string): { isValid: boolean; message?: string; } => {
+  if (!name || name.trim().length === 0) {
+    return { isValid: false, message: "Name cannot be empty" };
   }
-
-  // Check for generic placeholder names
-  const genericNames = ['unknown', 'item', 'unnamed', 'lost item', 'found item'];
-  if (genericNames.includes(nameTag.toLowerCase().trim())) {
-    return { isValid: false, message: 'Please provide a more specific name' };
-  }
-
-  // 1+ character names are valid
   return { isValid: true };
 };
 
@@ -28,21 +17,21 @@ export const useFileUpload = (
   lastUsedLocation: string,
   setLastUsedCategory: (category: string) => void,
   setLastUsedLocation: (location: string) => void,
-  optimisticIdsRef: React.MutableRefObject<Set<string>>
+  optimisticIdsRef: React.MutableRefObject<Set<string>>,
+  setIsSyncing: (isSyncing: boolean) => void
 ) => {
-  // Store active FileReaders for cleanup
   const activeReaders = useRef<Set<FileReader>>(new Set());
 
-  // Cleanup function for FileReaders
-  const cleanupReaders = () => {
+  const cleanupReaders = useCallback(() => {
     activeReaders.current.forEach((reader: FileReader) => {
       if (reader.readyState === FileReader.LOADING) {
         reader.abort();
       }
     });
     activeReaders.current.clear();
-  };
-  const handleFileSelect = (
+  }, []);
+
+  const handleFileSelect = useCallback((
     e: React.ChangeEvent<HTMLInputElement>,
     setPendingItems: React.Dispatch<React.SetStateAction<PendingItem[]>>,
     isAdmin: boolean,
@@ -57,239 +46,173 @@ export const useFileUpload = (
     }
 
     files.forEach(file => {
-      // Check if file is an image
-      if (!file.type.startsWith('image/')) {
-        console.warn('Skipping non-image file:', file.name);
-        return;
-      }
-
-      // Check if file is too large
+      if (!file.type.startsWith('image/')) return;
       if (isFileTooLarge(file)) {
-        alert(`File ${file.name} is too large (${formatFileSize(file.size)}). Maximum size is ${formatFileSize(20 * 1024 * 1024)}.`);
+        alert(`File ${file.name} is too large. Max size 20MB.`);
         return;
       }
 
-      // Check file size (warn if larger than 5MB)
-      if (needsCompression(file)) {
-        console.log(`Compressing large image: ${file.name} (${formatFileSize(file.size)})`);
-      }
-
-      // Process image (compress if needed)
       const processImage = async () => {
         try {
           let imageDataUrl: string;
-
           if (needsCompression(file)) {
             const compressed = await compressImage(file);
-            console.log(`Compressed ${file.name}: ${formatFileSize(compressed.originalSize)} → ${formatFileSize(compressed.fileSize)} (${(compressed.compressionRatio * 100).toFixed(1)}% reduction)`);
             imageDataUrl = compressed.dataUrl;
           } else {
             const reader = new FileReader();
+            activeReaders.current.add(reader);
             imageDataUrl = await new Promise<string>((resolve, reject) => {
               reader.onload = () => resolve(reader.result as string);
               reader.onerror = () => reject(new Error('Failed to read file'));
               reader.readAsDataURL(file);
             });
+            activeReaders.current.delete(reader);
           }
 
           let blurhash = '';
           try {
             blurhash = await encodeImageToBlurhash(imageDataUrl);
           } catch (e) {
-            console.error('Failed to generate blurhash', e);
+            console.error('Blurhash failed', e);
           }
 
-          // Add to pending items
-          setPendingItems(prev => [...prev, {
+          // Validate initial category/location against schemas
+          const categoryResult = CategorySchema.safeParse(lastUsedCategory);
+          const locationResult = LocationSchema.safeParse(lastUsedLocation);
+
+          const newItem: PendingItem = {
             id: Math.random().toString(36).substring(2, 11),
             imageUrls: [imageDataUrl],
             blurhashes: [blurhash],
             nameTag: '',
-            category: lastUsedCategory,
+            category: categoryResult.success ? categoryResult.data : CategorySchema.options[0],
+            location: locationResult.success ? locationResult.data : LocationSchema.options[0],
             description: '',
-            location: lastUsedLocation,
-            customLocation: '',
             isAnalyzing: false,
             activePreviewIdx: 0
-          }]);
+          };
+
+          setPendingItems(prev => [...prev, newItem]);
         } catch (error) {
-          console.error('Failed to process image:', file.name, error);
-          alert(`Failed to process ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          console.error('File process error:', error);
         }
       };
-
       processImage();
     });
-    e.target.value = '';
-  };
 
-  const updatePendingField = <K extends keyof PendingItem>(
+    if (e.target) e.target.value = '';
+  }, [lastUsedCategory, lastUsedLocation]);
+
+  const updatePendingField = useCallback(<K extends keyof PendingItem>(
     index: number,
     field: K,
     value: PendingItem[K],
     setPendingItems: React.Dispatch<React.SetStateAction<PendingItem[]>>
   ): void => {
-    if (field === 'category') setLastUsedCategory(value as string);
-    if (field === 'location') setLastUsedLocation(value as string);
-
     setPendingItems(prev => {
       const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
+      if (next[index]) {
+        next[index] = { ...next[index], [field]: value };
+        if (field === 'category') setLastUsedCategory(value as string);
+        if (field === 'location') setLastUsedLocation(value as string);
+      }
       return next;
     });
-  };
+  }, [setLastUsedCategory, setLastUsedLocation]);
 
-  const removePendingItem = (
+  const removePendingItem = useCallback((
     id: string,
     setPendingItems: React.Dispatch<React.SetStateAction<PendingItem[]>>,
-    cancelAiFill: (itemId: string) => void
+    onRemove?: (id: string) => void
   ): void => {
-    cancelAiFill(id);
     setPendingItems(prev => prev.filter(item => item.id !== id));
-  };
+    if (onRemove) onRemove(id);
+  }, []);
 
-  const confirmUpload = async (
+  const confirmUpload = useCallback(async (
     pendingItems: PendingItem[],
     setPendingItems: React.Dispatch<React.SetStateAction<PendingItem[]>>,
     setIsUploadModalOpen: (open: boolean) => void,
     setShowSuccessToast: (show: boolean) => void,
-    generateEmbedding: (text: string, taskType?: 'RETRIEVAL_DOCUMENT' | 'RETRIEVAL_QUERY') => Promise<number[] | null>,
-    setItems?: React.Dispatch<React.SetStateAction<Item[]>>
+    isAdmin: boolean,
+    generateEmbedding: (text: string) => Promise<number[] | null>
   ): Promise<void> => {
-    // Validate all items before upload
-    const validationIssues = pendingItems.map((item, index) => {
-      const validation = validateNameTag(item.nameTag);
-      return {
-        index,
-        item,
-        validation
-      };
-    }).filter(issue => !issue.validation.isValid);
-
-    // If there are validation issues, show confirmation dialog
-    if (validationIssues.length > 0) {
-      const issueMessages = validationIssues.map(issue =>
-        `Item ${issue.index + 1}: ${issue.validation.message}`
-      ).join('\n');
-
-      const proceedAnyway = confirm(
-        `Some items have name issues:\n\n${issueMessages}\n\nContinue anyway?`
-      );
-
-      if (!proceedAnyway) {
-        return; // User chose to go back and fix issues
+    for (const item of pendingItems) {
+      if (!validateNameTag(item.nameTag).isValid) {
+        alert(`Validation error: ${validateNameTag(item.nameTag).message}`);
+        return;
       }
     }
 
     try {
-      // Create optimistic items for immediate UI update
-      const optimisticItems: Item[] = pendingItems.map((pendingItem, index) => ({
-        id: `optimistic-${pendingItem.id}`,
-        imageUrls: pendingItem.imageUrls,
-        blurhashes: pendingItem.blurhashes,
-        nameTag: pendingItem.nameTag,
-        category: pendingItem.category,
-        description: pendingItem.description,
-        foundDate: new Date(Date.now() - index * 1000).toISOString(), // Stagger timestamps by 1 second
-        location: pendingItem.location === 'Other' ? (pendingItem.customLocation || 'Other Area') : pendingItem.location
-      }));
-
-      // Add optimistic items to UI immediately
-      if (setItems) {
-        setItems(prevItems => [...optimisticItems, ...prevItems]);
-      }
-
-      // Close modal and show success immediately
+      const optimisticItems = [...pendingItems];
       setPendingItems([]);
       setIsUploadModalOpen(false);
       setShowSuccessToast(true);
-      setTimeout(() => setShowSuccessToast(false), 3000);
 
-      // Store optimistic IDs to prevent Firestore updates from refreshing them
       optimisticIdsRef.current = new Set(optimisticItems.map(item => item.id));
+      setIsSyncing(true);
 
-      // Upload all items to Firebase in background - DON'T update UI after
-      const uploadPromises = pendingItems.map(async (pendingItem, index) => {
+      const uploadPromises = optimisticItems.map(async (pendingItem, index) => {
         try {
-          // Convert data URLs to File objects for upload
-          const imageFiles = await Promise.all(
-            pendingItem.imageUrls.map(async (dataUrl, fileIndex) => {
-              const response = await fetch(dataUrl);
-              const blob = await response.blob();
-              return new File([blob], `image-${fileIndex}.png`, { type: 'image/png' });
-            })
-          );
-
-          // Upload images to Firebase Storage
-          const imageUrls = await uploadMultipleImages(imageFiles, pendingItem.id);
-
-          // Generate embedding for semantic search
+          const { getItemSearchText } = await import('../utils/vector');
           const searchText = getItemSearchText({
             nameTag: pendingItem.nameTag,
             category: pendingItem.category,
             description: pendingItem.description,
-            location: pendingItem.location === 'Other' ? (pendingItem.customLocation || 'Other Area') : pendingItem.location
+            location: pendingItem.location
           });
-          const embedding = await generateEmbedding(searchText, 'RETRIEVAL_DOCUMENT');
 
-          // Create item for Firestore
-          const itemData: Omit<Item, 'id'> = {
-            imageUrls,
+          const embedding = await generateEmbedding(searchText);
+
+          const itemData: any = {
+            imageUrls: pendingItem.imageUrls,
             blurhashes: pendingItem.blurhashes,
             nameTag: pendingItem.nameTag,
             category: pendingItem.category,
             description: pendingItem.description,
-            foundDate: new Date(Date.now() - index * 1000).toISOString(), // Use staggered timestamp
+            foundDate: new Date(Date.now() - index * 60000).toISOString(),
             location: pendingItem.location === 'Other' ? (pendingItem.customLocation || 'Other Area') : pendingItem.location,
-            embedding: embedding || undefined
           };
 
+          if (embedding && embedding.length > 0) {
+            itemData.embedding = embedding;
+          }
+
           const realId = await addItem(itemData);
-
-          // Clean up optimistic ID after successful upload
-          optimisticIdsRef.current.delete(optimisticItems[index].id);
-
+          optimisticIdsRef.current.delete(pendingItem.id);
           return { success: true, realId };
         } catch (error) {
-          console.error('Failed to upload item:', pendingItem.id, error);
-          return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+          console.error('Upload error:', error, isAdmin);
+          return { success: false };
         }
       });
 
-      const results = await Promise.all(uploadPromises);
-
-      // Clean up all optimistic IDs after all uploads complete
+      await Promise.all(uploadPromises);
       optimisticIdsRef.current.clear();
-
-      // Only show errors, don't update UI to prevent refresh
-      const failedItems = results.filter(r => !r.success);
-      if (failedItems.length > 0) {
-        alert(`${failedItems.length} item(s) failed to upload.`);
-      }
+      setIsSyncing(false);
     } catch (error) {
       console.error('Upload process failed:', error);
-      alert('Upload failed. Please try again.');
     }
-  };
+  }, [setIsSyncing]);
 
-  const closeAndCancelAll = (
+  const closeAndCancelAll = useCallback((
     abortControllers: React.MutableRefObject<Map<string, AbortController>>,
     setPendingItems: React.Dispatch<React.SetStateAction<PendingItem[]>>,
     setIsUploadModalOpen: (open: boolean) => void
   ): void => {
     abortControllers.current.forEach((controller) => controller.abort());
     abortControllers.current.clear();
-
     setPendingItems([]);
     setIsUploadModalOpen(false);
-  };
+  }, []);
 
-  return {
+  return useMemo(() => ({
     handleFileSelect,
     updatePendingField,
     removePendingItem,
     confirmUpload,
     closeAndCancelAll,
     cleanupReaders
-  };
+  }), [handleFileSelect, updatePendingField, removePendingItem, confirmUpload, closeAndCancelAll, cleanupReaders]);
 };

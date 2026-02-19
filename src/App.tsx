@@ -6,7 +6,7 @@ import type { Item, PendingItem, ViewMode } from './types';
 import { useGeminiAPI } from './hooks/useGeminiAPI';
 import { useFileUpload } from './hooks/useFileUpload';
 import { useDarkMode } from './hooks/useDarkMode';
-import { subscribeToItemsSmart, deleteAllItems, deleteItem } from './services/firestore';
+import { subscribeToItems, deleteAllItems, deleteItem } from './services/firestore';
 import { migrateBlurhashes } from './utils/migration';
 import Header from './components/Header';
 import CategoryFilter from './components/CategoryFilter';
@@ -36,17 +36,18 @@ const App: React.FC = () => {
   const abortControllers = useRef<Map<string, AbortController>>(new Map());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const optimisticIds = useRef<Set<string>>(new Set());
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   // Real-time Firestore subscription
   useEffect(() => {
-    const unsubscribe = subscribeToItemsSmart((fetchedItems) => {
+    const unsubscribe = subscribeToItems((fetchedItems: Item[]) => {
       setItems(fetchedItems);
-    }, optimisticIds);
+    });
 
     return () => {
       unsubscribe();
     };
-  }, [optimisticIds]);
+  }, []);
 
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -60,6 +61,13 @@ const App: React.FC = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
   const [showSuccessToast, setShowSuccessToast] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (showSuccessToast) {
+      const timer = setTimeout(() => setShowSuccessToast(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessToast]);
 
   const [isSemanticSearch, setIsSemanticSearch] = useState<boolean>(false);
   const [queryEmbedding, setQueryEmbedding] = useState<number[] | null>(null);
@@ -86,7 +94,8 @@ const App: React.FC = () => {
     lastUsedLocation,
     setLastUsedCategory,
     setLastUsedLocation,
-    optimisticIds
+    optimisticIds,
+    setIsSyncing
   );
 
   const handleDelete = useCallback(async (id: string) => {
@@ -132,25 +141,16 @@ const App: React.FC = () => {
       let skipped = 0;
       let failed = 0;
 
-      console.log(`[Indexing] Starting scan of ${items.length} items...`);
-      console.table(items.map(i => ({
-        id: i.id,
-        name: i.nameTag,
-        hasEmbedding: !!i.embedding && i.embedding.length > 0
-      })));
-
       for (const item of items) {
         const hasEmbedding = !!item.embedding && item.embedding.length > 0;
 
         if (!hasEmbedding) {
           try {
-            console.log(`[Indexing] Working on: ${item.nameTag} (${item.id})`);
             const searchText = getItemSearchText(item);
             const embedding = await generateEmbedding(searchText, 'RETRIEVAL_DOCUMENT');
 
             if (embedding && embedding.length > 0) {
               await updateItem(item.id, { embedding });
-              console.log(`[Indexing] ✅ Success: ${item.nameTag}`);
               count++;
             } else {
               console.warn(`[Indexing] ⚠️ No embedding returned for: ${item.nameTag}`);
@@ -240,7 +240,7 @@ const App: React.FC = () => {
           similarity: item.embedding ? cosineSimilarity(queryEmbedding, item.embedding) : 0
         }))
         .filter(item => {
-          if (searchQuery.length < 5) return true; // Less aggressive filtering for short queries
+          if (searchQuery.length < 5) return true;
           return item.similarity > 0.4;
         })
         .sort((a, b) => (b.similarity || 0) - (a.similarity || 0)) as (Item & { similarity: number; })[];
@@ -277,7 +277,7 @@ const App: React.FC = () => {
   };
 
   const confirmUploadWrapper = (): void => {
-    confirmUpload(pendingItems, setPendingItems, setIsUploadModalOpen, setShowSuccessToast, generateEmbedding, setItems);
+    confirmUpload(pendingItems, setPendingItems, setIsUploadModalOpen, setShowSuccessToast, isAdmin, generateEmbedding);
   };
 
   const autoFillItemWrapper = (index: number): void => {
@@ -289,6 +289,10 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans transition-colors duration-200 dark:bg-slate-900 dark:text-slate-100 flex flex-col">
+      {isSyncing && (
+        <div data-testid="sync-indicator" className="fixed top-0 left-0 w-full h-1 bg-emerald-500 z-[100] animate-pulse" />
+      )}
+      <div id="ai-debug-error" className="hidden" data-error=""></div>
       <Header
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
