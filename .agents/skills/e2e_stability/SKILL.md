@@ -21,3 +21,7 @@ This skill provides mandatory guidelines for debugging and writing stable E2E te
 - **Firestore Undefined**: `addDoc` fails if any field is `javascript undefined`. Strip undefined keys before calling Firestore.
 - **AI Latency**: AI-filled fields may take seconds. Use `await expect(locator).toHaveValue(..., { timeout: 10000 })`.
 - **Debounce**: Wait for at least 500ms-1000ms after typing in search boxes before verifying results if the app uses debounced filtering.
+
+## 5. Final Verification (Lint & Type Check)
+- **Zero Lint Policy**: Before concluding, always run `npm run lint`. E2E tests often involve quick hacks that lead to unused variables or `any` types.
+- **Type Safety**: Ensure no `any` is leaked into service or hook code during test-driven modifications.
