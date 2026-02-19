@@ -13,6 +13,9 @@ describe('Header', () => {
     onAdminToggle: vi.fn(),
     isDarkMode: false,
     toggleDarkMode: vi.fn(),
+    isSemanticSearch: false,
+    setIsSemanticSearch: vi.fn(),
+    isEmbeddingLoading: false,
   };
 
   it('renders the title correctly', () => {
