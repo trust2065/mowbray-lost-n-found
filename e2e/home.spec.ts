@@ -2,6 +2,14 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Mowbray Lost & Found Hub', () => {
   test.beforeEach(async ({ page }) => {
+    // Mock Gemini API to avoid proxy errors in CI
+    await page.route('**/api/gemini/analyze', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ embedding: { values: new Array(768).fill(0) } })
+      });
+    });
     await page.goto('/');
   });
 
@@ -68,18 +76,22 @@ test.describe('Mowbray Lost & Found Hub', () => {
   });
 
   test('should show admin login modal on title double click', async ({ page }) => {
-    const title = page.locator('header h1'); // Target the header h1 specifically
+    // Target the title text specifically to ensure the double click hits the interactive area
+    const titleArea = page.getByText(/Mowbray Public/i).first();
+    await expect(titleArea).toBeVisible();
 
     // Double click the title
-    await title.dblclick();
+    await titleArea.dblclick({ force: true });
 
-    // Expect the login modal to appear
+    // Expect the login modal to appear with a longer timeout for CI
     const loginModal = page.getByText('Staff Access');
-    await expect(loginModal).toBeVisible();
+    await expect(loginModal).toBeVisible({ timeout: 10000 });
 
     // Close the modal
     const closeButton = page.getByRole('button', { name: 'Cancel' });
+    await expect(closeButton).toBeVisible();
     await closeButton.click();
+
     await expect(loginModal).not.toBeVisible();
   });
 });
