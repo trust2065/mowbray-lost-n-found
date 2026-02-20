@@ -31,6 +31,7 @@ describe('UploadModal', () => {
   const mockOnUpdatePendingField = vi.fn();
   const mockOnRemovePendingItem = vi.fn();
   const mockOnAutoFillItem = vi.fn();
+  const mockOnAutoFillAll = vi.fn();
   const mockOnConfirmUpload = vi.fn();
   const fileInputRef = { current: null } as unknown as React.RefObject<HTMLInputElement>;
 
@@ -43,6 +44,7 @@ describe('UploadModal', () => {
     onUpdatePendingField: mockOnUpdatePendingField,
     onRemovePendingItem: mockOnRemovePendingItem,
     onAutoFillItem: mockOnAutoFillItem,
+    onAutoFillAll: mockOnAutoFillAll,
     onConfirmUpload: mockOnConfirmUpload,
     fileInputRef
   };

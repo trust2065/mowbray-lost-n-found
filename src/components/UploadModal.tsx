@@ -15,6 +15,7 @@ interface UploadModalProps {
   onUpdatePendingField: <K extends keyof PendingItem>(index: number, field: K, value: PendingItem[K]) => void;
   onRemovePendingItem: (id: string) => void;
   onAutoFillItem: (index: number) => void;
+  onAutoFillAll: () => void;
   onConfirmUpload: () => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
 }
@@ -28,6 +29,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
   onUpdatePendingField,
   onRemovePendingItem,
   onAutoFillItem,
+  onAutoFillAll,
   onConfirmUpload,
   fileInputRef
 }) => {
@@ -330,6 +332,19 @@ const UploadModal: React.FC<UploadModalProps> = ({
         {pendingItems.length > 0 && (
           <div className="p-8 border-t dark:border-slate-700 flex items-center gap-5">
             <button onClick={onClose} className="flex-1 py-4 text-slate-400 dark:text-slate-500 font-bold hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Cancel</button>
+            {isAdmin && pendingItems.length > 1 && (
+              <button
+                onClick={onAutoFillAll}
+                disabled={pendingItems.every(item => item.isAnalyzing)}
+                className="py-4 px-5 bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 font-black rounded-3xl text-sm flex items-center gap-2 hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors disabled:opacity-50"
+              >
+                {pendingItems.some(item => item.isAnalyzing)
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <Sparkles className="w-4 h-4" />
+                }
+                AI Fill All
+              </button>
+            )}
             <button onClick={onConfirmUpload} className="flex-2 py-4.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-3xl shadow-2xl hover:shadow-blue-500/20 active:scale-95 transition-all">
               Post {pendingItems.length} Item(s)
             </button>

@@ -21,7 +21,18 @@ export const useGeminiAPI = () => {
       p.id === item.id ? { ...p, isAnalyzing: true } : p
     ));
 
-    const prompt = `Analyze this lost item for Mowbray Public School. Categorize as: ${CATEGORIES.join(', ')}. Return JSON: { "nameTag": "string", "category": "string", "description": "string" }`;
+    const prompt = `You are analyzing a photo of a lost item found at Mowbray Public School.
+
+PRIORITY: Look for any NAME or PHONE NUMBER written/labeled on the item (e.g. on a label, tag, sticker, or written in marker). This is the most important information.
+
+Categorize the item as one of: ${CATEGORIES.join(', ')}.
+
+Return JSON:
+{
+  "nameTag": "The name written on the item, or describe the item if no name found",
+  "category": "one of the categories above",
+  "description": "Brief description. Include any phone number found on the item."
+}`;
 
     try {
       const resp = await fetch(item.imageUrls[0]);

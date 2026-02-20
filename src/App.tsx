@@ -287,6 +287,14 @@ const App: React.FC = () => {
     }
   };
 
+  const autoFillAllItemsWrapper = (): void => {
+    pendingItems.forEach((item, index) => {
+      if (!item.isAnalyzing && item.imageUrls.length > 0) {
+        autoFillItem(item, index, setPendingItems, abortControllers);
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans transition-colors duration-200 dark:bg-slate-900 dark:text-slate-100 flex flex-col">
       {isSyncing && (
@@ -436,6 +444,7 @@ const App: React.FC = () => {
         onUpdatePendingField={updatePendingFieldWrapper}
         onRemovePendingItem={removePendingItemWrapper}
         onAutoFillItem={autoFillItemWrapper}
+        onAutoFillAll={autoFillAllItemsWrapper}
         onConfirmUpload={confirmUploadWrapper}
         fileInputRef={fileInputRef}
       />
