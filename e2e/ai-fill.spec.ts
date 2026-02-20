@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('AI Auto Fill Feature', () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('public_access_authorized', 'true');
+    });
     await page.goto('/');
   });
 
@@ -37,7 +40,7 @@ test.describe('AI Auto Fill Feature', () => {
     await staffButton.click();
 
     // Verify admin mode banner appears
-    await expect(page.getByText('ADMIN MODE', { exact: false })).toBeVisible();
+    await expect(page.getByText('Staff Mode Enabled', { exact: false })).toBeVisible();
 
     // 3. Open Upload Modal using the Floating Action Button
     // The FAB in App.tsx has aria-label="Post new item"

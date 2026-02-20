@@ -3,6 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('Semantic Search (RAG) Flow', () => {
 
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('public_access_authorized', 'true');
+    });
     await page.goto('/');
 
     // Auth
@@ -84,7 +87,7 @@ test.describe('Semantic Search (RAG) Flow', () => {
 
     // 4. Semantic Search
     await page.getByRole('button', { name: /AI/i }).first().click();
-    await page.getByPlaceholder(/Describe what you lost/i).fill('something blue');
+    await page.getByPlaceholder(/Describe item color/i).fill('something blue');
 
     await expect(page.getByText(/Match/i).first()).toBeVisible({ timeout: 15000 });
     console.log('[E2E] PASSED');

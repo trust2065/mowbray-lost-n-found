@@ -11,6 +11,9 @@ test.describe('Validation & Edge Cases', () => {
         body: JSON.stringify({ embedding: { values: new Array(768).fill(0) } })
       });
     });
+    await page.addInitScript(() => {
+      window.localStorage.setItem('public_access_authorized', 'true');
+    });
     await page.goto('/');
 
     // Open upload modal

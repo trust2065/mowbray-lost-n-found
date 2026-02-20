@@ -32,6 +32,9 @@ test.describe('Admin Workflow: Login, Create, Verify, Delete', () => {
         });
       }
     });
+    await page.addInitScript(() => {
+      window.localStorage.setItem('public_access_authorized', 'true');
+    });
     await page.goto('/');
   });
 
@@ -65,7 +68,7 @@ test.describe('Admin Workflow: Login, Create, Verify, Delete', () => {
     // 3. Verify & Cleanup
     await expect(page.getByRole('heading', { name: /All items/i })).toBeVisible();
 
-    const searchInput = page.getByPlaceholder(/Search items/i);
+    const searchInput = page.getByPlaceholder(/Search by name/i);
     await searchInput.fill('Official');
     await expect(page.locator('h3', { hasText: /Official Test Item/i }).first()).toBeVisible({ timeout: 10000 });
 
@@ -73,7 +76,7 @@ test.describe('Admin Workflow: Login, Create, Verify, Delete', () => {
     page.once('dialog', async d => await d.accept());
     await page.getByRole('button', { name: 'Delete All' }).click();
 
-    await expect(page.getByText('No items found.')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('No results matching your request.')).toBeVisible({ timeout: 15000 });
     console.log('[E2E] PASSED');
   });
 });

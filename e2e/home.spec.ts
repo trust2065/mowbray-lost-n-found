@@ -10,6 +10,9 @@ test.describe('Mowbray Lost & Found Hub', () => {
         body: JSON.stringify({ embedding: { values: new Array(768).fill(0) } })
       });
     });
+    await page.addInitScript(() => {
+      window.localStorage.setItem('public_access_authorized', 'true');
+    });
     await page.goto('/');
     // Wait for initial load
     await expect(page.getByRole('heading', { name: /Mowbray Public/i })).toBeVisible();
@@ -45,7 +48,7 @@ test.describe('Mowbray Lost & Found Hub', () => {
   });
 
   test('should allow searching for items', async ({ page }) => {
-    const searchInput = page.getByPlaceholder(/Search items/i);
+    const searchInput = page.getByPlaceholder(/Search by name/i);
     await expect(searchInput).toBeVisible();
 
     // Type a search query
@@ -63,15 +66,46 @@ test.describe('Mowbray Lost & Found Hub', () => {
     const filterContainer = page.locator('.overflow-x-auto');
     await expect(filterContainer).toBeVisible();
 
-    const buttons = filterContainer.getByRole('button');
-    const count = await buttons.count();
-    expect(count).toBeGreaterThan(1);
+    // Verify it is active
+    await expect(allButton).toHaveClass(/bg-blue-600/);
 
-    // Click a category button
-    await buttons.nth(1).click();
+    // Provide a mock item to test other categories
+    await page.getByRole('button', { name: "Post new item" }).click();
+    await page.locator('input[type="file"]').first().setInputFiles({
+      name: 'cat.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from('fake')
+    });
+
+    // Fill the required name
+    const nameInput = page.locator('#name-input-0');
+    await nameInput.fill('Cat Item');
+
+    // Select category 'School Hat'
+    const categorySelect = page.locator('#category-select-0');
+    await categorySelect.selectOption('School Hat');
+
+    // Fill description
+    const descInput = page.locator('#description-input-0');
+    await descInput.fill('A cat hat');
+
+    // Submit
+    const postButton = page.getByRole('button', { name: /Post 1 Item/i });
+    await postButton.click();
+
+    // Wait for the upload/indicator to finish
+    await expect(page.getByTestId('sync-indicator')).toBeHidden({ timeout: 20000 });
+
+    // Now 'School Hat' category should be available and active
+    const buttons = filterContainer.getByRole('button');
+    const schoolHatButton = page.getByRole('button', { name: 'School Hat' }).first();
+    await expect(schoolHatButton).toBeVisible({ timeout: 15000 });
+
+    // Click 'School Hat' category
+    await schoolHatButton.click();
 
     // Verify it becomes active
-    await expect(buttons.nth(1)).toHaveClass(/bg-blue-600/);
+    await expect(schoolHatButton).toHaveClass(/bg-blue-600/);
   });
 
   test('should show admin login modal on title double click', async ({ page }) => {

@@ -11,6 +11,9 @@ test.describe('Guest Workflow: Upload Item', () => {
         body: JSON.stringify({ embedding: { values: new Array(768).fill(0) } })
       });
     });
+    await page.addInitScript(() => {
+      window.localStorage.setItem('public_access_authorized', 'true');
+    });
     await page.goto('/');
   });
 
@@ -54,7 +57,7 @@ test.describe('Guest Workflow: Upload Item', () => {
     await expect(page.getByText('Posted to Mowbray Hub!')).toBeVisible();
 
     // 6. Verify Item Appears in Feed
-    const searchInput = page.getByPlaceholder(/Search items/i);
+    const searchInput = page.getByPlaceholder(/Search by name/i);
     await searchInput.fill('Guest Lost Item');
 
     // Use h3 locator for better precision
