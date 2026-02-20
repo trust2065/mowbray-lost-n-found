@@ -149,17 +149,19 @@ const Header: React.FC<HeaderProps> = ({
             />
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-2">
               {isEmbeddingLoading && <Loader2 className="w-4 h-4 text-emerald-500 animate-spin" />}
-              <button
-                onClick={() => setIsSemanticSearch(!isSemanticSearch)}
-                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all ${isSemanticSearch
-                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                  : 'bg-slate-100 text-slate-400 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-500'
-                  }`}
-                title={isSemanticSearch ? "Switch to Keyword Search" : "Try Smart Search (AI)"}
-              >
-                <Sparkles className={`w-3 h-3 ${isSemanticSearch ? 'animate-pulse' : ''}`} />
-                <span className="hidden xs:inline">{isSemanticSearch ? 'Smart' : 'AI'}</span>
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => setIsSemanticSearch(!isSemanticSearch)}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all ${isSemanticSearch
+                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                    : 'bg-slate-100 text-slate-400 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-500'
+                    }`}
+                  title={isSemanticSearch ? "Switch to Keyword Search" : "Try Smart Search (AI)"}
+                >
+                  <Sparkles className={`w-3 h-3 ${isSemanticSearch ? 'animate-pulse' : ''}`} />
+                  <span className="hidden xs:inline">{isSemanticSearch ? 'Smart' : 'AI'}</span>
+                </button>
+              )}
             </div>
           </div>
 
