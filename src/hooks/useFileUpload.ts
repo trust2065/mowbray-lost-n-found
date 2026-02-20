@@ -22,6 +22,7 @@ export const useFileUpload = (
   setIsSyncing: (isSyncing: boolean) => void
 ) => {
   const activeReaders = useRef<Set<FileReader>>(new Set());
+  const cancelledIds = useRef<Set<string>>(new Set());
 
   const cleanupReaders = useCallback(() => {
     activeReaders.current.forEach((reader: FileReader) => {
@@ -168,6 +169,22 @@ export const useFileUpload = (
 
       const uploadPromises = optimisticItems.map(async (pendingItem, index) => {
         try {
+          // 1. Upload images to Firebase Storage first
+          const { uploadImageToFirebase } = await import('../services/storage');
+          const tempId = `item-${Date.now()}-${index}`;
+          const storageUrls: string[] = [];
+
+          for (let i = 0; i < pendingItem.imageUrls.length; i++) {
+            const dataUrl = pendingItem.imageUrls[i];
+            // Convert data URL to Blob
+            const response = await fetch(dataUrl);
+            const blob = await response.blob();
+            const file = new File([blob], `photo-${i}.jpg`, { type: blob.type || 'image/jpeg' });
+            const downloadUrl = await uploadImageToFirebase(file, tempId);
+            storageUrls.push(downloadUrl);
+          }
+
+          // 2. Generate embedding
           const { getItemSearchText } = await import('../utils/vector');
           const searchText = getItemSearchText({
             nameTag: pendingItem.nameTag,
@@ -178,8 +195,9 @@ export const useFileUpload = (
 
           const embedding = await generateEmbedding(searchText);
 
+          // 3. Save to Firestore with Storage URLs (not data URLs)
           const itemData: Omit<Item, 'id'> = {
-            imageUrls: pendingItem.imageUrls,
+            imageUrls: storageUrls,
             blurhashes: pendingItem.blurhashes || [],
             nameTag: pendingItem.nameTag,
             category: pendingItem.category,
@@ -192,8 +210,24 @@ export const useFileUpload = (
             itemData.embedding = embedding;
           }
 
+          // Check if user cancelled this item while we were uploading
+          if (cancelledIds.current.has(pendingItem.id)) {
+            // Already cancelled — delete from Firestore and Storage
+            cancelledIds.current.delete(pendingItem.id);
+            return { success: false };
+          }
+
           const realId = await addItem(itemData);
           optimisticIdsRef.current.delete(pendingItem.id);
+
+          // Double-check: user might have cancelled right after write
+          if (cancelledIds.current.has(pendingItem.id)) {
+            cancelledIds.current.delete(pendingItem.id);
+            const { deleteItem: delItem } = await import('../services/firestore');
+            await delItem(realId).catch(() => { });
+            return { success: false };
+          }
+
           return { success: true, realId };
         } catch (error) {
           console.error('Upload error:', error, isAdmin);
@@ -226,6 +260,7 @@ export const useFileUpload = (
     removePendingItem,
     confirmUpload,
     closeAndCancelAll,
-    cleanupReaders
+    cleanupReaders,
+    cancelledIds
   }), [handleFileSelect, updatePendingField, removePendingItem, confirmUpload, closeAndCancelAll, cleanupReaders]);
 };

@@ -38,10 +38,13 @@ const App: React.FC = () => {
   const optimisticIds = useRef<Set<string>>(new Set());
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
-  // Real-time Firestore subscription
   useEffect(() => {
     const unsubscribe = subscribeToItems((fetchedItems: Item[]) => {
-      setItems(fetchedItems);
+      setItems(prev => {
+        // Keep optimistic items that haven't been written to Firestore yet
+        const stillPending = prev.filter(item => optimisticIds.current.has(item.id));
+        return [...stillPending, ...fetchedItems];
+      });
     });
 
     return () => {
@@ -88,7 +91,8 @@ const App: React.FC = () => {
     removePendingItem,
     confirmUpload,
     closeAndCancelAll,
-    cleanupReaders
+    cleanupReaders,
+    cancelledIds
   } = useFileUpload(
     lastUsedCategory,
     lastUsedLocation,
@@ -99,6 +103,13 @@ const App: React.FC = () => {
   );
 
   const handleDelete = useCallback(async (id: string) => {
+    // If it's an optimistic item (not yet in Firestore), cancel upload and remove
+    if (optimisticIds.current.has(id)) {
+      optimisticIds.current.delete(id);
+      cancelledIds.current.add(id); // Signal background upload to skip/rollback
+      setItems(prev => prev.filter(item => item.id !== id));
+      return;
+    }
     try {
       await deleteItem(id);
     } catch (error) {
@@ -277,6 +288,19 @@ const App: React.FC = () => {
   };
 
   const confirmUploadWrapper = (): void => {
+    // Optimistic insert: show items immediately with data URLs
+    const optimisticItems: Item[] = pendingItems.map((p, i) => ({
+      id: p.id,
+      imageUrls: p.imageUrls,
+      blurhashes: p.blurhashes || [],
+      nameTag: p.nameTag,
+      category: p.category,
+      description: p.description,
+      foundDate: p.photoDate || new Date(Date.now() - i * 60000).toISOString(),
+      location: p.location === 'Other' ? (p.customLocation || 'Other Area') : p.location,
+    }));
+    setItems(prev => [...optimisticItems, ...prev]);
+
     confirmUpload(pendingItems, setPendingItems, setIsUploadModalOpen, setShowSuccessToast, isAdmin, generateEmbedding);
   };
 
