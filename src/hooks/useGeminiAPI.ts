@@ -21,17 +21,21 @@ export const useGeminiAPI = () => {
       p.id === item.id ? { ...p, isAnalyzing: true } : p
     ));
 
-    const prompt = `You are analyzing a photo of a lost item found at Mowbray Public School.
+    const prompt = `You are analyzing a photo of lost item(s) found at Mowbray Public School (a primary school in Sydney).
 
-PRIORITY: Look for any NAME or PHONE NUMBER written/labeled on the item (e.g. on a label, tag, sticker, or written in marker). This is the most important information.
+YOUR #1 TASK: Find the CHILD'S NAME written on the item. Look for handwritten names (marker/pen), iron-on labels, or sticker labels. This is a PERSONAL name (e.g. "Emily", "James W.", "Oliver Chen"), NOT a brand or manufacturer name.
 
-Categorize the item as one of: ${CATEGORIES.join(', ')}.
+IGNORE: Brand names, logos, manufacturer names (e.g. "Pickles", "Nike", "Smiggle") — these are NOT the child's name.
+
+If you see a PHONE NUMBER on the label, include it in the description.
+
+Categorize as one of: ${CATEGORIES.join(', ')}.
 
 Return JSON:
 {
-  "nameTag": "The name written on the item, or describe the item if no name found",
+  "nameTag": "The child's personal name found on the item. If no personal name found, write 'No name found'. If you can not recognise it, write'cannot tell what the name is'",
   "category": "one of the categories above",
-  "description": "Brief description. Include any phone number found on the item."
+  "description": "Brief description of the item. Include any phone number if visible."
 }`;
 
     try {

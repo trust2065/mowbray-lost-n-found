@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     }
 
     // Default: generateContent
-    const MODEL_NAME = "gemini-1.5-flash-latest"; // Or gemini-2.0-flash-exp if available
+    const MODEL_NAME = "gemini-2.0-flash";
     console.log('[Proxy] Generation request');
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`,
