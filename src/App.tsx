@@ -307,7 +307,7 @@ const App: React.FC = () => {
       nameTag: p.nameTag,
       category: p.category,
       description: p.description,
-      foundDate: p.photoDate || new Date(Date.now() - i * 60000).toISOString(),
+      foundDate: new Date(Date.now() - i * 60000).toISOString(),
       location: p.location === 'Other' ? (p.customLocation || 'Other Area') : p.location,
     }));
     setItems(prev => [...optimisticItems, ...prev]);

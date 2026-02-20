@@ -22,6 +22,7 @@ export const ItemSchema = z.object({
   category: CategorySchema,
   description: z.string(),
   foundDate: z.string(),
+  photoDate: z.string().optional(),
   location: LocationSchema,
   isDeleted: z.boolean().optional(),
   embedding: z.array(z.number()).optional(),

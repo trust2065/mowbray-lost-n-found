@@ -202,9 +202,13 @@ export const useFileUpload = (
             nameTag: pendingItem.nameTag,
             category: pendingItem.category,
             description: pendingItem.description,
-            foundDate: pendingItem.photoDate || new Date(Date.now() - index * 60000).toISOString(),
+            foundDate: new Date(Date.now() - index * 60000).toISOString(), // Always upload time for 14-day expiry
             location: pendingItem.location === 'Other' ? (pendingItem.customLocation || 'Other Area') : pendingItem.location,
           };
+
+          if (pendingItem.photoDate) {
+            itemData.photoDate = pendingItem.photoDate;
+          }
 
           if (embedding && embedding.length > 0) {
             itemData.embedding = embedding;
