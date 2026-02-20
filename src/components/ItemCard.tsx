@@ -213,18 +213,18 @@ const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, isAdmin, onPho
               <div className="text-xs text-slate-400 dark:text-slate-500 flex flex-col gap-0.5">
                 <div
                   className="flex items-center gap-2 cursor-help"
-                  title="Upload Date (The day this item was posted)"
+                  title="Post Date: The day this item was added to the system"
                 >
                   <Calendar className="w-3.5 h-3.5" />
-                  <span>Post on {new Date(item.foundDate).toLocaleDateString()}</span>
+                  <span className="font-medium whitespace-nowrap text-slate-500 dark:text-slate-400">Post on {new Date(item.foundDate).toLocaleDateString()}</span>
                 </div>
                 {item.photoDate && new Date(item.photoDate).toDateString() !== new Date(item.foundDate).toDateString() && (
                   <div
-                    className="flex items-center gap-2 cursor-help text-slate-300 dark:text-slate-600"
-                    title="Photo Taken Date (Extracted from image metadata)"
+                    className="flex items-center gap-2 cursor-help text-slate-400 dark:text-slate-500 opacity-60"
+                    title="Taken Date: When the photo was originally captured"
                   >
                     <span className="w-3.5 text-center">📷</span>
-                    <span>{new Date(item.photoDate).toLocaleDateString()}</span>
+                    <span className="whitespace-nowrap">Taken on {new Date(item.photoDate).toLocaleDateString()}</span>
                   </div>
                 )}
               </div>

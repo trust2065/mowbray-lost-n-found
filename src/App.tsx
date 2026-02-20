@@ -234,6 +234,34 @@ const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchQuery, isSemanticSearch, generateEmbedding]);
 
+  const availableCategories = useMemo(() => {
+    const isRecent = (dateStr: string): boolean => {
+      const diff = Math.abs(Date.now() - new Date(dateStr).getTime());
+      return diff <= 14 * 24 * 60 * 60 * 1000;
+    };
+
+    const categories = new Set<string>();
+    items.forEach(item => {
+      if (!isAdmin && !isRecent(item.foundDate)) return;
+
+      if (searchQuery.trim()) {
+        if (!isSemanticSearch || !queryEmbedding) {
+          const q = searchQuery.toLowerCase();
+          const matchesSearch = item.nameTag.toLowerCase().includes(q) ||
+            item.description.toLowerCase().includes(q) ||
+            item.location.toLowerCase().includes(q);
+          if (!matchesSearch) return;
+        } else if (queryEmbedding) {
+          const similarity = item.embedding ? cosineSimilarity(queryEmbedding, item.embedding) : 0;
+          if (searchQuery.length >= 5 && similarity <= 0.4) return;
+        }
+      }
+
+      categories.add(item.category);
+    });
+    return categories;
+  }, [items, isAdmin, searchQuery, isSemanticSearch, queryEmbedding]);
+
   const filteredItems = useMemo(() => {
     const isRecent = (dateStr: string): boolean => {
       const diff = Math.abs(Date.now() - new Date(dateStr).getTime());
@@ -378,6 +406,7 @@ const App: React.FC = () => {
         <CategoryFilter
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
+          availableCategories={availableCategories}
         />
 
         <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -395,7 +424,8 @@ const App: React.FC = () => {
         ) : filteredItems.length === 0 ? (
           <div className="py-32 text-center text-slate-400 dark:text-slate-500 border-2 border-dashed rounded-[3rem] border-blue-200 dark:border-slate-700">
             <Search className="w-16 h-16 mx-auto mb-4 opacity-10 text-blue-400 dark:text-slate-400" />
-            <p className="text-lg font-bold">No items found.</p>
+            <p className="text-lg font-bold">No results matching your request.</p>
+            <p className="text-sm mt-2 opacity-60">Try searching by item name, category, brand, or location.</p>
           </div>
         ) : (
           <>

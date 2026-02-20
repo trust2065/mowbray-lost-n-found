@@ -142,7 +142,7 @@ const Header: React.FC<HeaderProps> = ({
             </div>
             <input
               type="text"
-              placeholder={isSemanticSearch ? "Describe what you lost..." : "Search items..."}
+              placeholder={isSemanticSearch ? "Describe item color, brand, or location..." : "Search by name, category, or location..."}
               className={`w-full pl-10 pr-20 py-2.5 bg-white border-2 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 outline-none transition-all shadow-inner dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 ${isSemanticSearch ? 'border-emerald-500' : 'border-transparent dark:border-slate-700'}`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
