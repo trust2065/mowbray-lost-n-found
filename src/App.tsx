@@ -6,7 +6,7 @@ import type { Item, PendingItem, ViewMode } from './types';
 import { useGeminiAPI } from './hooks/useGeminiAPI';
 import { useFileUpload } from './hooks/useFileUpload';
 import { useDarkMode } from './hooks/useDarkMode';
-import { subscribeToItems, deleteAllItems, deleteItem } from './services/firestore';
+import { subscribeToItems, deleteAllItems, deleteItem, updateItem } from './services/firestore';
 import { migrateBlurhashes } from './utils/migration';
 import Header from './components/Header';
 import CategoryFilter from './components/CategoryFilter';
@@ -117,6 +117,15 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Failed to delete item:', error);
       alert('Failed to delete item.');
+    }
+  }, []);
+
+  const handleEdit = useCallback(async (id: string, updates: Partial<Item>) => {
+    try {
+      await updateItem(id, updates);
+    } catch (error) {
+      console.error('Failed to update item:', error);
+      alert('Failed to update item.');
     }
   }, []);
 
@@ -399,6 +408,7 @@ const App: React.FC = () => {
                   onPhotoClick={handlePhotoClick}
                   isAdmin={isAdmin}
                   onDelete={handleDelete}
+                  onEdit={handleEdit}
                   similarity={(item as Item & { similarity?: number; }).similarity}
                 />
               ))}

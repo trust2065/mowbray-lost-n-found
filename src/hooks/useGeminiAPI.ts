@@ -34,7 +34,7 @@ Categorize as one of: ${CATEGORIES.join(', ')}.
 Return JSON:
 {
   "nameTag": "The child's personal name found on the item. If no personal name found, write 'No name found'. If you can not recognise it, write'cannot tell what the name is'",
-  "category": "one of the categories above",
+  "category": "one of the categories above, otherwise use 'Other'",
   "description": "Brief description of the item. Include any phone number if visible."
 }`;
 

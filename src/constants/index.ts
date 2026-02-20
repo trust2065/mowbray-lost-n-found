@@ -16,7 +16,7 @@ if (!ADMIN_PASSCODE && import.meta.env.PROD) {
   console.warn('Security Warning: VITE_ADMIN_PASSCODE is not set.');
 }
 
-export const CATEGORIES: readonly string[] = ["School Hat", "Water Bottle", "Lunch Box"] as const;
+export const CATEGORIES: readonly string[] = ["School Hat", "Water Bottle", "Lunch Box", "Other"] as const;
 export const LOCATIONS: readonly string[] = [
   "Campus",
   "Basketball Court",
