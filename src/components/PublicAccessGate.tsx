@@ -24,7 +24,10 @@ const PublicAccessGate: React.FC<PublicAccessGateProps> = ({ onAuthorized }) => 
   };
 
   useEffect(() => {
-    setIsAnimating(true);
+    const timer = requestAnimationFrame(() => {
+      setIsAnimating(true);
+    });
+    return () => cancelAnimationFrame(timer);
   }, []);
 
   return (

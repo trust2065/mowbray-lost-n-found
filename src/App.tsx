@@ -125,7 +125,7 @@ const App: React.FC = () => {
       console.error('Failed to delete item:', error);
       alert('Failed to delete item.');
     }
-  }, []);
+  }, [cancelledIds]);
 
   const handleEdit = useCallback(async (id: string, updates: Partial<Item>) => {
     try {
