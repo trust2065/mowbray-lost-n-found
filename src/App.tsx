@@ -15,6 +15,7 @@ import StaffLoginModal from './components/StaffLoginModal';
 import UploadModal from './components/UploadModal';
 import SuccessToast from './components/SuccessToast';
 import PhotoViewer from './components/PhotoViewer';
+import PublicAccessGate from './components/PublicAccessGate';
 
 declare global {
   interface Window {
@@ -26,6 +27,9 @@ const App: React.FC = () => {
   // --- State Management ---
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isPublicAuthorized, setIsPublicAuthorized] = useState<boolean>(() => {
+    return localStorage.getItem('public_access_authorized') === 'true';
+  });
   const [showPasscodeModal, setShowPasscodeModal] = useState<boolean>(false);
   const [passcodeAttempt, setPasscodeAttempt] = useState<string>('');
   const [loginError, setLoginError] = useState<boolean>(false);
@@ -365,8 +369,12 @@ const App: React.FC = () => {
     });
   };
 
+  if (!isPublicAuthorized) {
+    return <PublicAccessGate onAuthorized={() => setIsPublicAuthorized(true)} />;
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans transition-colors duration-200 dark:bg-slate-900 dark:text-slate-100 flex flex-col">
+    <div className={`min-h-screen ${isDarkMode ? 'dark' : ''} bg-slate-50 dark:bg-slate-950 transition-colors duration-300 font-outfit`}>
       {isSyncing && (
         <div data-testid="sync-indicator" className="fixed top-0 left-0 w-full h-1 bg-emerald-500 z-[100] animate-pulse" />
       )}
