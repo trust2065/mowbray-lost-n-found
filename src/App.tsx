@@ -42,8 +42,11 @@ const App: React.FC = () => {
   useEffect(() => {
     const unsubscribe = subscribeToItems((fetchedItems: Item[]) => {
       setItems(prev => {
-        // Keep optimistic items that haven't been written to Firestore yet
-        const stillPending = prev.filter(item => optimisticIds.current.has(item.id));
+        const fetchedIds = new Set(fetchedItems.map(i => i.id));
+        // Only keep optimistic items that ARE NOT yet in the fetched database items
+        const stillPending = prev.filter(item =>
+          optimisticIds.current.has(item.id) && !fetchedIds.has(item.id)
+        );
         return [...stillPending, ...fetchedItems];
       });
       setIsLoading(false);

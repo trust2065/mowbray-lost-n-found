@@ -9,6 +9,7 @@ import {
   deleteDoc,
   doc,
   updateDoc,
+  setDoc,
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -59,14 +60,21 @@ export interface FirestoreError {
 
 const ITEMS_COLLECTION = 'lost-items';
 
-export const addItem = async (item: Omit<Item, 'id'>): Promise<string> => {
+export const addItem = async (item: Omit<Item, 'id'>, customId?: string): Promise<string> => {
   try {
-    const collectionRef = collection(db, ITEMS_COLLECTION);
-
-    const docRef = await addDoc(collectionRef, {
+    const itemData = {
       ...item,
       foundDate: Timestamp.fromDate(new Date(item.foundDate))
-    });
+    };
+
+    if (customId) {
+      const docRef = doc(db, ITEMS_COLLECTION, customId);
+      await setDoc(docRef, itemData);
+      return customId;
+    }
+
+    const collectionRef = collection(db, ITEMS_COLLECTION);
+    const docRef = await addDoc(collectionRef, itemData);
 
     // Immediately try to read it back
     await getDoc(docRef);
@@ -74,12 +82,6 @@ export const addItem = async (item: Omit<Item, 'id'>): Promise<string> => {
     return docRef.id;
   } catch (error) {
     console.error('Error saving item to Firestore:', error);
-    if (error instanceof Error) {
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack
-      });
-    }
     throw error;
   }
 };

@@ -221,7 +221,7 @@ export const useFileUpload = (
             return { success: false };
           }
 
-          const realId = await addItem(itemData);
+          const realId = await addItem(itemData, pendingItem.id);
           optimisticIdsRef.current.delete(pendingItem.id);
 
           // Double-check: user might have cancelled right after write
