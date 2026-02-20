@@ -97,7 +97,6 @@ test.describe('Mowbray Lost & Found Hub', () => {
     await expect(page.getByTestId('sync-indicator')).toBeHidden({ timeout: 20000 });
 
     // Now 'School Hat' category should be available and active
-    const buttons = filterContainer.getByRole('button');
     const schoolHatButton = page.getByRole('button', { name: 'School Hat' }).first();
     await expect(schoolHatButton).toBeVisible({ timeout: 15000 });
 
