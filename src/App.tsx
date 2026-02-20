@@ -543,7 +543,6 @@ const App: React.FC = () => {
           <div className="text-center">
             <h3 className="font-bold text-sm mb-3">Contact</h3>
             <p className="mb-2">Email: <a href="mailto:chocous8@gmail.com" className="hover:text-blue-200 underline">chocous8@gmail.com</a></p>
-            <p>Location: Lane Cove, NSW</p>
           </div>
 
           {/* Right - Legal */}
