@@ -28,7 +28,7 @@ describe('Header', () => {
     const setSearchQueryMock = vi.fn();
     render(<Header {...defaultProps} setSearchQuery={setSearchQueryMock} />);
 
-    const searchInput = screen.getByPlaceholderText(/Search items.../i);
+    const searchInput = screen.getByPlaceholderText(/Search by name, category, or location.../i);
     fireEvent.change(searchInput, { target: { value: 'hat' } });
 
     expect(setSearchQueryMock).toHaveBeenCalledWith('hat');

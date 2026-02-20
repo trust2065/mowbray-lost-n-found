@@ -158,6 +158,8 @@ describe('App Integration', () => {
     mockSubscribeToItems.mockImplementation((callback) => {
       callback(mockItems);
     });
+    // Ensure public access is authorized for integration tests
+    localStorage.setItem('public_access_authorized', 'true');
   });
 
   it('renders header and initial items', async () => {
@@ -175,7 +177,7 @@ describe('App Integration', () => {
     // Wait for items to load first
     await screen.findByText('Red Hat');
 
-    const searchInput = screen.getByPlaceholderText(/search/i);
+    const searchInput = screen.getByPlaceholderText(/search by name/i);
 
     // Search for "Bottle"
     fireEvent.change(searchInput, { target: { value: 'Bottle' } });
@@ -353,7 +355,7 @@ describe('App Integration', () => {
     fireEvent.click(screen.getByRole('button', { name: /School Hat/i }));
 
     // Then also search for "red"
-    fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'red' } });
+    fireEvent.change(screen.getByPlaceholderText(/search by name/i), { target: { value: 'red' } });
 
     await waitFor(() => {
       expect(screen.getByText('Red Hat')).toBeInTheDocument();
@@ -456,7 +458,7 @@ describe('App Integration', () => {
 
     // App renders the empty state message when filtered list is empty
     await waitFor(() => {
-      expect(screen.getByText(/No items found/i)).toBeInTheDocument();
+      expect(screen.getByText(/No results matching your request/i)).toBeInTheDocument();
     });
   });
 
