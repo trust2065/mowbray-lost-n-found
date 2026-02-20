@@ -18,6 +18,7 @@ if (!ADMIN_PASSCODE && import.meta.env.PROD) {
 
 export const CATEGORIES: readonly string[] = ["School Hat", "Water Bottle", "Lunch Box"] as const;
 export const LOCATIONS: readonly string[] = [
+  "Campus",
   "Basketball Court",
   "After School Area",
   "Lunch Area",

@@ -31,6 +31,7 @@ const App: React.FC = () => {
   const [loginError, setLoginError] = useState<boolean>(false);
 
   const [items, setItems] = useState<Item[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // --- Instance Refs ---
   const abortControllers = useRef<Map<string, AbortController>>(new Map());
@@ -45,6 +46,7 @@ const App: React.FC = () => {
         const stillPending = prev.filter(item => optimisticIds.current.has(item.id));
         return [...stillPending, ...fetchedItems];
       });
+      setIsLoading(false);
     });
 
     return () => {
@@ -376,7 +378,12 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {filteredItems.length === 0 ? (
+        {isLoading ? (
+          <div className="py-32 text-center">
+            <div className="w-10 h-10 mx-auto mb-4 border-4 border-blue-200 dark:border-slate-600 border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin" />
+            <p className="text-slate-400 dark:text-slate-500 font-bold">Loading items...</p>
+          </div>
+        ) : filteredItems.length === 0 ? (
           <div className="py-32 text-center text-slate-400 dark:text-slate-500 border-2 border-dashed rounded-[3rem] border-blue-200 dark:border-slate-700">
             <Search className="w-16 h-16 mx-auto mb-4 opacity-10 text-blue-400 dark:text-slate-400" />
             <p className="text-lg font-bold">No items found.</p>
