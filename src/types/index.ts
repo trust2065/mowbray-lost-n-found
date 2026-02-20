@@ -36,6 +36,7 @@ export const PendingItemSchema = ItemSchema.omit({ foundDate: true }).extend({
   customLocation: z.string().optional(),
   isAnalyzing: z.boolean(),
   activePreviewIdx: z.number(),
+  photoDate: z.string().optional(),
 });
 
 export type PendingItem = z.infer<typeof PendingItemSchema>;

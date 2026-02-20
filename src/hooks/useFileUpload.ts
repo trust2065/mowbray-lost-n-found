@@ -4,6 +4,7 @@ import type { PendingItem, Item } from '../types';
 import { CategorySchema, LocationSchema } from '../types';
 import { compressImage, needsCompression, isFileTooLarge } from '../utils/imageCompression';
 import { encodeImageToBlurhash } from '../utils/blurhash';
+import exifr from 'exifr';
 
 export const validateNameTag = (name: string): { isValid: boolean; message?: string; } => {
   if (!name || name.trim().length === 0) {
@@ -80,6 +81,17 @@ export const useFileUpload = (
           const categoryResult = CategorySchema.safeParse(lastUsedCategory);
           const locationResult = LocationSchema.safeParse(lastUsedLocation);
 
+          // Extract EXIF date from photo
+          let photoDate: string | undefined;
+          try {
+            const exif = await exifr.parse(file, ['DateTimeOriginal']);
+            if (exif?.DateTimeOriginal instanceof Date) {
+              photoDate = exif.DateTimeOriginal.toISOString();
+            }
+          } catch {
+            // EXIF not available (PNG, screenshots, etc.) — fallback later
+          }
+
           const newItem: PendingItem = {
             id: Math.random().toString(36).substring(2, 11),
             imageUrls: [imageDataUrl],
@@ -89,7 +101,8 @@ export const useFileUpload = (
             location: locationResult.success ? locationResult.data : LocationSchema.options[0],
             description: '',
             isAnalyzing: false,
-            activePreviewIdx: 0
+            activePreviewIdx: 0,
+            photoDate,
           };
 
           setPendingItems(prev => [...prev, newItem]);
@@ -171,7 +184,7 @@ export const useFileUpload = (
             nameTag: pendingItem.nameTag,
             category: pendingItem.category,
             description: pendingItem.description,
-            foundDate: new Date(Date.now() - index * 60000).toISOString(),
+            foundDate: pendingItem.photoDate || new Date(Date.now() - index * 60000).toISOString(),
             location: pendingItem.location === 'Other' ? (pendingItem.customLocation || 'Other Area') : pendingItem.location,
           };
 
