@@ -89,7 +89,7 @@ const App: React.FC = () => {
 
   const [showPrivacyModal, setShowPrivacyModal] = useState<boolean>(false);
 
-  const { autoFillItem, cancelAiFill, cleanup, generateEmbedding } = useGeminiAPI();
+  const { analyzeItem, autoFillItem, cancelAiFill, cleanup, generateEmbedding } = useGeminiAPI();
   const {
     handleFileSelect,
     updatePendingField,
@@ -131,6 +131,10 @@ const App: React.FC = () => {
       alert('Failed to update item.');
     }
   }, []);
+  const handleAiFillItem = useCallback(async (id: string, imageUrls: string[]) => {
+    return analyzeItem(id, imageUrls, abortControllers);
+  }, [analyzeItem]);
+
 
   // --- Cleanup on component unmount ---
   useEffect(() => {
@@ -442,6 +446,7 @@ const App: React.FC = () => {
                   isAdmin={isAdmin}
                   onDelete={handleDelete}
                   onEdit={handleEdit}
+                  onAiFill={handleAiFillItem}
                   similarity={(item as Item & { similarity?: number; }).similarity}
                 />
               ))}
@@ -547,6 +552,9 @@ const App: React.FC = () => {
             <p className="mb-2"> 2026 Choco Li. All rights reserved.</p>
             <p><button onClick={() => setShowPrivacyModal(true)} className="hover:text-blue-200 underline">Privacy Policy</button></p>
           </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-4 border-t border-white/10 mt-4 pt-4 text-center opacity-70">
+          <p>A community project developed by a Mowbray parent. Not an official school service.</p>
         </div>
       </footer>
 

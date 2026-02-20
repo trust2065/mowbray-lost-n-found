@@ -1,9 +1,9 @@
 import React, { memo, useState } from 'react';
-import { MapPin, Calendar, Trash2, Pencil, Check, X } from 'lucide-react';
+import { MapPin, Calendar, Trash2, Pencil, Check, X, Sparkles, Loader2 } from 'lucide-react';
 import { Blurhash } from 'react-blurhash';
 import Gallery from './Gallery';
 import { CATEGORIES, LOCATIONS } from '../constants';
-import type { Item, ViewMode } from '../types';
+import type { Item, ViewMode, GeminiAnalysis } from '../types';
 
 interface ItemCardProps {
   item: Item;
@@ -12,12 +12,14 @@ interface ItemCardProps {
   onPhotoClick: (urls: string[], index: number) => void;
   onDelete?: (id: string) => void;
   onEdit?: (id: string, updates: Partial<Item>) => void;
+  onAiFill?: (id: string, imageUrls: string[]) => Promise<GeminiAnalysis>;
   similarity?: number;
 }
 
-const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, isAdmin, onPhotoClick, onDelete, onEdit, similarity }) => {
+const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, isAdmin, onPhotoClick, onDelete, onEdit, onAiFill, similarity }) => {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [editData, setEditData] = useState({
     nameTag: item.nameTag,
     category: item.category,
@@ -48,18 +50,48 @@ const ItemCard: React.FC<ItemCardProps> = memo(({ item, viewMode, isAdmin, onPho
     setIsEditing(false);
   };
 
+  const handleAiFill = async () => {
+    if (!onAiFill) return;
+    setIsAnalyzing(true);
+    try {
+      const analysis = await onAiFill(item.id, item.imageUrls);
+      setEditData(prev => ({
+        ...prev,
+        nameTag: analysis.nameTag,
+        category: analysis.category,
+        description: analysis.description,
+      }));
+    } catch (error) {
+      console.error('AI Fill failed:', error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const editActions = isEditing ? (
     <>
+      {onAiFill && (
+        <button
+          onClick={handleAiFill}
+          disabled={isAnalyzing}
+          className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors disabled:opacity-50"
+          title="AI Auto Fill"
+        >
+          {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+        </button>
+      )}
       <button
         onClick={handleSave}
-        className="p-1.5 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+        disabled={isAnalyzing}
+        className="p-1.5 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors disabled:opacity-50"
         title="Save"
       >
         <Check className="w-4 h-4" />
       </button>
       <button
         onClick={handleCancel}
-        className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+        disabled={isAnalyzing}
+        className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors disabled:opacity-50"
         title="Cancel"
       >
         <X className="w-4 h-4" />

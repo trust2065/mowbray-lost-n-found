@@ -4,22 +4,19 @@ import type { PendingItem, GeminiAnalysis } from '../types';
 import { GeminiAnalysisSchema } from '../types';
 
 export const useGeminiAPI = () => {
-  const autoFillItem = useCallback(async (
-    item: PendingItem,
-    _index: number,
-    setPendingItems: React.Dispatch<React.SetStateAction<PendingItem[]>>,
+  const analyzeItem = useCallback(async (
+    id: string,
+    imageUrls: string[],
     abortControllers: React.MutableRefObject<Map<string, AbortController>>
-  ): Promise<void> => {
-    if (!item.imageUrls.length) return;
+  ): Promise<GeminiAnalysis> => {
+    if (!imageUrls.length) throw new Error('No images to analyze');
 
-    if (abortControllers.current.has(item.id)) return;
+    if (abortControllers.current.has(id)) {
+      abortControllers.current.get(id)?.abort();
+    }
 
     const controller = new AbortController();
-    abortControllers.current.set(item.id, controller);
-
-    setPendingItems(prev => prev.map(p =>
-      p.id === item.id ? { ...p, isAnalyzing: true } : p
-    ));
+    abortControllers.current.set(id, controller);
 
     const prompt = `You are analyzing a photo of lost item(s) found at Mowbray Public School (a primary school in Sydney).
 
@@ -39,7 +36,7 @@ Return JSON:
 }`;
 
     try {
-      const resp = await fetch(item.imageUrls[0]);
+      const resp = await fetch(imageUrls[0]);
       const imageBlob = await resp.blob();
 
       const imageData = await new Promise<string>((resolve) => {
@@ -86,10 +83,27 @@ Return JSON:
             description: rawAnalysis.description || ''
           };
         }
+        return analysis;
       } else {
         throw new Error('No analysis found');
       }
+    } finally {
+      abortControllers.current.delete(id);
+    }
+  }, []);
 
+  const autoFillItem = useCallback(async (
+    item: PendingItem,
+    _index: number,
+    setPendingItems: React.Dispatch<React.SetStateAction<PendingItem[]>>,
+    abortControllers: React.MutableRefObject<Map<string, AbortController>>
+  ): Promise<void> => {
+    setPendingItems(prev => prev.map(p =>
+      p.id === item.id ? { ...p, isAnalyzing: true } : p
+    ));
+
+    try {
+      const analysis = await analyzeItem(item.id, item.imageUrls, abortControllers);
       setPendingItems(prev => prev.map(p =>
         p.id === item.id
           ? {
@@ -111,10 +125,8 @@ Return JSON:
       setPendingItems(prev => prev.map(p =>
         p.id === item.id ? { ...p, isAnalyzing: false } : p
       ));
-    } finally {
-      abortControllers.current.delete(item.id);
     }
-  }, []);
+  }, [analyzeItem]);
 
   const cancelAiFill = useCallback((itemId: string, abortControllers: React.MutableRefObject<Map<string, AbortController>>): void => {
     abortControllers.current.get(itemId)?.abort();
@@ -141,5 +153,5 @@ Return JSON:
     }
   }, []);
 
-  return useMemo(() => ({ autoFillItem, cancelAiFill, cleanup, generateEmbedding }), [autoFillItem, cancelAiFill, cleanup, generateEmbedding]);
+  return useMemo(() => ({ analyzeItem, autoFillItem, cancelAiFill, cleanup, generateEmbedding }), [analyzeItem, autoFillItem, cancelAiFill, cleanup, generateEmbedding]);
 };
